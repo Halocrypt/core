@@ -73,7 +73,7 @@ def cors(resp):
 
 class UserTable(db.Model):
     # pylint: disable=E1101
-    _id: str = db.Column(db.String(30), unique=True, nullable=False)
+    _id: str = db.Column(db.String(30), unique=True, nullable=False, primary_key=True)
     user: str = db.Column(db.String(30), unique=True, nullable=False)
     name: str = db.Column(db.String(30), nullable=False)
     password_hash: str = db.Column(db.String, nullable=False)
