@@ -1,0 +1,55 @@
+daemon off;
+#Heroku dynos have at least 4 cores.
+worker_processes <%= ENV["NGINX_WORKERS"] || 4 %>;
+
+events {
+    use epoll;
+    accept_mutex on;
+    worker_connections 1024;
+}
+http {
+    server_tokens off;
+    gzip on;
+    gzip_comp_level 9;
+    gzip_min_length 128;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_types text/plain text/css application/json application/javascript application/x-javascript text/javascript text/xml application/xml application/rss+xml application/atom+xml image/svg+xml application/rdf+ image/x-icon;
+    log_format l2met 'USER_AGENT=$http_user_agent X-Forwarded-For=$http_x_forwarded_for Scheme:$scheme';
+    access_log error l2met;
+    include mime.types;
+    default_type application/octet-stream;
+    sendfile on;
+
+    #Must read the body in 5 seconds.
+    client_body_timeout 5;
+
+    upstream app_server {
+        server unix:/tmp/nginx.socket fail_timeout=0;
+    }
+    server {
+        root app;
+        listen <%= ENV["PORT"] %> default_server;
+        server_name _;
+        keepalive_timeout 5;
+        add_header	X-Frame-Options "DENY";
+        if ($http_x_forwarded_proto != "https") {
+            return 301 https://$host$request_uri;
+        }
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+            add_header x-served-by "nginx";
+            proxy_pass http://app_server;
+        }
+        location /docs/ {
+            add_header x-proxy-cached "1";
+            expires 8h;
+            alias /app/docs/;
+            try_files $uri =404;
+        }
+
+    }
+}
+
