@@ -25,12 +25,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# not exactly as we have 4 workers running, it's basically a lottery if you hit the same worker thrice
-# gate = Gate(use_heroku_ip_resolver=IS_PROD, limit=1, min_requests=3)
-
-
 @app.before_request
-@guard(ban_time=5, ip_resolver="heroku" if IS_PROD else None, request_count=3, per=1)
+@guard(ban_time=5, ip_resolver="heroku" if IS_PROD else None, request_count=50, per=15)
 def gate_check():
     pass
 

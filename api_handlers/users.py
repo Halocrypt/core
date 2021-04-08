@@ -9,8 +9,6 @@ from auth_token import (
     require_jwt,
 )
 from danger import (
-    ACCESS_TOKEN,
-    REFRESH_TOKEN,
     check_password_hash,
     create_token,
     decode_token,

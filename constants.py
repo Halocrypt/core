@@ -1,6 +1,6 @@
 from os import environ as _environ
-from set_env import setup_env as _setup_env
 
+from set_env import setup_env as _setup_env
 
 _setup_env()
 
@@ -20,4 +20,6 @@ TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * int(_environ.get("TOKEN_EXPIRATION_TIME"
 FLASK_SECRET = _environ.get("FLASK_SECRET")
 DATABASE_URL = _environ.get("DATABASE_URL")
 REFRESH_TOKEN_SALT = _environ.get("REFRESH_TOKEN_SALT")
+
+CACHE_DIR = "@cache"
 del _environ

@@ -1,20 +1,26 @@
 # ==================================================
 #                  Utility Functions
 # ==================================================
+from email.utils import parseaddr as _parseaddr
 from functools import wraps as _wraps
 from json import dumps as _dumps
 from re import compile as _compile
 from traceback import print_exc as _print_exc
 
-from flask import request as _request
 from flask import Request as _Request
 from flask import Response as _Response
+from flask import request as _request
 from werkzeug.datastructures import Headers
-
 
 # maybe only strip whitespace?
 _sub = _compile(r"([^\w]|_)").sub
 sanitize = lambda x: _sub("", x).strip().lower()
+
+
+def validate_email_address(email_id: str) -> str:
+    if "@" in _parseaddr(email_id)[1]:
+        return email_id
+    raise AppException("Invalid Email")
 
 
 def get_origin(request: _Request) -> str:
