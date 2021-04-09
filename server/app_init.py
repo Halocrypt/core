@@ -1,7 +1,7 @@
 from secrets import token_urlsafe
 from time import time
 
-from flask import Flask, request, send_from_directory
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from floodgate import guard
 from sqlalchemy.orm import validates
@@ -30,15 +30,6 @@ db = SQLAlchemy(app)
 @guard(ban_time=5, ip_resolver="heroku" if IS_PROD else None, request_count=50, per=15)
 def gate_check():
     pass
-
-
-@app.route("/robots.txt")
-def robots():
-    ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365
-    # we disallow all bots here because we don't want useless crawling over the API
-    return send_from_directory(
-        "static", "robots.txt", cache_timeout=ONE_YEAR_IN_SECONDS
-    )
 
 
 @app.errorhandler(404)
