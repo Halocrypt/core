@@ -1,4 +1,4 @@
-from flask.helpers import send_file, send_from_directory
+from flask.helpers import send_from_directory
 from server.set_env import setup_env
 
 setup_env()

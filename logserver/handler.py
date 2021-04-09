@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 
 ACCESS_KEY = environ.get("REMOTE_LOG_DB_KEY")
+LOG_SERVER = environ["LOG_SERVER_ENDPOINT"]
 LOG_FOLDER = Path(path.dirname(path.realpath(__file__)), "@logs")
 
 del path
@@ -45,9 +46,6 @@ def append(file: Path, line: bytes):
         f.write(b"\n")
 
 
-LOG_SERVER = "https://logs.halocrypt.com/add"
-
-
 def send_file_contents(file: Path):
     data = file.read_bytes()
     file.write_bytes(b"")
@@ -56,7 +54,7 @@ def send_file_contents(file: Path):
 
 def send_to_log_server(data: bytes):
     requests.post(
-        LOG_SERVER,
+        f"{LOG_SERVER}/add",
         data=data,
         headers={
             "content-type": "application/octet-stream",
