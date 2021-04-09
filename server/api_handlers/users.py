@@ -1,22 +1,22 @@
 from flask import request as flask_request
 from psycopg2 import IntegrityError
 
-from app_init import UserTable
-from auth_token import (
+from server.app_init import UserTable
+from server.auth_token import (
     issue_access_token,
     issue_refresh_token,
     regenerate_access_token,
     require_jwt,
 )
-from danger import (
+from server.danger import (
     check_password_hash,
     create_token,
     decode_token,
 )
 
-from util import AppException
-from util import ParsedRequest as _Parsed
-from util import json_response
+from server.util import AppException
+from server.util import ParsedRequest as _Parsed
+from server.util import json_response
 
 from .common import add_to_db, get_user_by_id, save_to_db
 from .cred_manager import CredManager

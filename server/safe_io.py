@@ -2,7 +2,7 @@ from os.path import basename
 from pathlib import Path
 from time import sleep
 
-from constants import CACHE_DIR
+from .constants import CACHE_DIR
 
 _LOCKFILE_SUFFIX = "~#.lock"
 

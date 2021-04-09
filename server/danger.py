@@ -10,11 +10,11 @@ from time import time as _time
 
 import jwt as _jwt
 import passlib.hash as _pwhash
-from constants import (
+from .constants import (
     SIGNING_KEY as _SIGNING_KEY,
     TOKEN_EXPIRATION_TIME_IN_SECONDS as _TOKEN_EXPIRATION_TIME_IN_SECONDS,
 )
-from util import AppException
+from .util import AppException
 
 if _SIGNING_KEY is None:
     raise Exception(

@@ -1,17 +1,17 @@
 """Decorators that ensure authentication is provided
 """
 from flask import request, make_response, Response
-from danger import (
+from .danger import (
     decode_token as decode,
     ACCESS_TOKEN,
     REFRESH_TOKEN,
     check_password_hash as check,
     generate_password_hash,
 )
-from api_handlers.common import get_user_by_id
-from util import AppException, json_response, ParsedRequest, get_bearer_token
-from api_handlers.cred_manager import CredManager
-from constants import REFRESH_TOKEN_SALT
+from .api_handlers.common import get_user_by_id
+from .util import AppException, json_response, ParsedRequest, get_bearer_token
+from .api_handlers.cred_manager import CredManager
+from .constants import REFRESH_TOKEN_SALT
 
 
 def require_jwt(strict=True):
