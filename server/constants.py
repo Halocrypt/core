@@ -1,6 +1,6 @@
 from os import environ as _environ
 
-from set_env import setup_env as _setup_env
+from server.set_env import setup_env as _setup_env
 
 _setup_env()
 

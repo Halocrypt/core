@@ -1,6 +1,6 @@
-from api_handlers import users
-from app_init import app
-from util import POST_REQUEST, ParsedRequest, api_response, json_response
+from server.api_handlers import users
+from server.app_init import app
+from server.util import POST_REQUEST, ParsedRequest, api_response, json_response
 
 
 # user registration route

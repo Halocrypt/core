@@ -1,9 +1,9 @@
 from sqlalchemy import func as _func
 
-from app_init import UserTable as _U
-from app_init import db as _db
-from util import AppException as _AppException
-from util import sanitize
+from server.app_init import UserTable as _U
+from server.app_init import db as _db
+from server.util import AppException as _AppException
+from server.util import sanitize
 
 lower = _func.lower
 count = _func.count

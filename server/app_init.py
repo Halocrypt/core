@@ -1,21 +1,20 @@
-from enum import unique
+from secrets import token_urlsafe
+from time import time
+
 from flask import Flask, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from floodgate import guard
 from sqlalchemy.orm import validates
-from time import time
-from secrets import token_urlsafe
-from constants import IS_PROD, FLASK_SECRET, DATABASE_URL
-from danger import generate_password_hash
 
-from util import (
+from .constants import DATABASE_URL, FLASK_SECRET, IS_PROD
+from .danger import generate_password_hash
+from .util import (
     AppException,
     get_origin,
     json_response,
     sanitize,
     validate_email_address,
 )
-
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET

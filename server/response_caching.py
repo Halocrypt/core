@@ -16,8 +16,8 @@ from time import time
 
 from flask import make_response, send_from_directory
 
-from constants import CACHE_DIR
-from safe_io import open_and_read, open_and_write, safe_mkdir, safe_remove
+from .constants import CACHE_DIR
+from .safe_io import open_and_read, open_and_write, safe_mkdir, safe_remove
 
 DEFAULT_CACHE_TIMEOUT = 60
 

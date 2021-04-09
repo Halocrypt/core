@@ -5,13 +5,16 @@ GUNICORN_COMMANDS = (
         "gunicorn",
         "-c",
         "gunicorn.conf.py",
-        "app:app",
+        "server.app:app",
         "-b",
         "localhost:5000",
     ],
     ["gunicorn", "-c", "logserver/gunicorn.conf.py", "logserver_runner:app"],
 )
-FLASK_COMMANDS = (["python3", "app.py"], ["python3", "logserver_runner.py"])
+FLASK_COMMANDS = (
+    ["python3", "runner.py", "coreserver"],
+    ["python3", "runner.py", "logserver"],
+)
 
 
 def get_argv(argv, i):
