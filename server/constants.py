@@ -1,5 +1,5 @@
-from os import environ as _environ
-
+from os import environ as _environ, path
+from pathlib import Path
 from server.set_env import setup_env as _setup_env
 
 _setup_env()
@@ -21,5 +21,8 @@ FLASK_SECRET = _environ.get("FLASK_SECRET")
 DATABASE_URL = _environ.get("DATABASE_URL")
 REFRESH_TOKEN_SALT = _environ.get("REFRESH_TOKEN_SALT")
 
-CACHE_DIR = "@cache"
+CACHE_DIR = str(Path(path.dirname(path.realpath(__file__)), "@cache").resolve())
+
+del path
+del Path
 del _environ
