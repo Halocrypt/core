@@ -18,7 +18,8 @@ SIGNING_KEY = _environ.get("JWT_SIGNING_KEY")
 TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * int(_environ.get("TOKEN_EXPIRATION_TIME", 10))
 
 FLASK_SECRET = _environ.get("FLASK_SECRET")
-DATABASE_URL = _environ.get("DATABASE_URL")
+DATABASE_URL = _environ.get("DATABASE_URL").replace("postgres://", "postgresql://", 1)
+
 REFRESH_TOKEN_SALT = _environ.get("REFRESH_TOKEN_SALT")
 
 CACHE_DIR = str(Path(path.dirname(path.realpath(__file__)), "@cache").resolve())
