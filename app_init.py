@@ -1,3 +1,4 @@
+from enum import unique
 from flask import Flask, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from floodgate import guard
@@ -12,6 +13,7 @@ from util import (
     get_origin,
     json_response,
     sanitize,
+    validate_email_address,
 )
 
 
@@ -72,6 +74,8 @@ class UserTable(db.Model):
     _id: str = db.Column(db.String(30), unique=True, nullable=False, primary_key=True)
     user: str = db.Column(db.String(30), unique=True, nullable=False)
     name: str = db.Column(db.String(30), nullable=False)
+    email: str = db.Column(db.String(250), nullable=False, unique=True)
+    institution: str = db.Column(db.String(100))
     password_hash: str = db.Column(db.String, nullable=False)
     created_at: int = db.Column(db.Integer)
     # pylint: enable=E1101
@@ -83,11 +87,14 @@ class UserTable(db.Model):
             "name": self.name,
             "user": self.user,
             "created_at": self.created_at,
-            "_secure_": {},
+            "_secure_": {"email": self.email, "institution": self.institution},
         }
 
     @validates("user")
     def _validate_user(self, key, user: str):
+        if not user:
+            raise AppException("Username cannot be blank")
+        user = user.strip()
         length = len(user)
         if length > 30:
             raise AppException("Username cannot be longer than 30 characters")
@@ -104,16 +111,25 @@ class UserTable(db.Model):
             raise AppException("Password cannot be shorter than 4 characters")
         return generate_password_hash(password)
 
+    @validates("email")
+    def _validate_email(self, key, email: str):
+        if email:
+            raise AppException("Email cannot be blank")
+        email = email.strip()
+        return validate_email_address(email)
+
     def __init__(
         self,
         user: str = None,
         name: str = None,
+        email: str = None,
         password: str = None,
     ):
         raise_if_invalid_data(user, name, password)
         self._id = token_urlsafe(20)
         self.user = user.lower()
         self.name = name
+        self.email = email
         self.password_hash = password
         self.created_at = time()
 

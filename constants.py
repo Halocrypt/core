@@ -7,9 +7,9 @@ _setup_env()
 
 IS_PROD = _environ.get("IS_DEV") is None
 
-if IS_PROD:
+if not IS_PROD:
     print(
-        "assuming production environment, change `IS_DEV` in your .env.json to switch to dev"
+        "assuming development environment, remove `IS_DEV` from your environment to use the production mode"
     )
 
 # JWT Signing key, make sure this stays same or every user will need to relogin

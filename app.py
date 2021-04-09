@@ -4,6 +4,7 @@ setup_env()
 
 from app_init import app
 
+
 try:
     import routes.user
 except ImportError:

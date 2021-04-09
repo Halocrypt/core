@@ -131,3 +131,4 @@ dmypy.json
 .env.json
 @request-log/
 @cache/
+@logs/

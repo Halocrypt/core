@@ -94,6 +94,7 @@ def get_user_details(request: _Parsed, user: str, creds: CredManager = CredManag
         if current_user is not None:
             return self_details(request, creds)
         raise AppException("Not Authenticated")
+
     user_details = get_user_by_id(user)
     json = user_details.as_json
     json.pop("_secure_")
@@ -108,10 +109,10 @@ def self_details(request: _Parsed, creds: CredManager):
 
 @require_jwt()
 def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
-    editable_fields = ("email", "school", "name")
+    editable_fields = ("email", "institution", "name")
     current_user = creds.user
     if user != current_user:
-        raise AppException("Cannot edit ( not allowed )")
+        raise AppException("Cannot edit ( not allowed )", 403)
     json = request.json
     edit_field = json.get("field")
     if edit_field not in editable_fields:
