@@ -1,31 +1,51 @@
 from http import HTTPStatus
 from re import IGNORECASE
 from re import compile as _compile
+from server.api_handlers.templates import (
+    EMAIL_CONFIRMATION_TEMPLATE,
+    PASSWORD_RESET_TEMPLATE,
+)
 
-from psycopg2 import IntegrityError
-from server.models import UserTable
+
+from server.api_handlers.email import send_email
+from server.constants import BACKEND_WEBHOOK_URL
+
+# pylint: disable=no-name-in-module
+from psycopg2.errors import UniqueViolation
+from server.models import User
 from server.auth_token import (
     issue_access_token,
+    issue_email_confirmation_token,
+    issue_password_reset_token,
     issue_refresh_token,
     regenerate_access_token,
     require_jwt,
 )
-from server.danger import check_password_hash, create_token, decode_token
-from server.util import AppException
+from server.danger import (
+    EMAIL_CONF_TOKEN,
+    RESET_PASSWORD_TOKEN,
+    check_password_hash,
+    create_token,
+    decode_token,
+)
+from server.util import AppException, ParsedRequest, get_bearer_token
 from server.util import ParsedRequest as _Parsed
 from server.util import json_response
 
-from .common import add_to_db, get_user_by_id, save_to_db
+from .common import add_to_db, clean_secure, get_user_by_id, save_to_db, send_webhook
 from .cred_manager import CredManager
 
-# regex to find the offending column, surprisingly
+# regex to find the offending column
 # there must be a better way - RH
-find_error = _compile(r"Key\s*\(\"(?P<key>.*)?\"\)=\((?P<val>.*?)\)", IGNORECASE).search
+find_error = _compile(
+    r"Key\s*\(\"?(?P<key>.*?)\"?\)=\((?P<val>.*?)\)", IGNORECASE
+).search
 
 
 def get_integrity_error_cause(error_message: str):
     try:
         match = find_error(error_message)
+        print(error_message)
         if not match:
             return None
         k = match.group("key")
@@ -41,18 +61,28 @@ def register(request: _Parsed):
     get = json.get
     user = get("user")
     name = get("name")
+    email = get("email")
+    institution = get("institution")
     password = get("password")
-
+    event = get("event")
     try:
-        user_data = UserTable(user, name, password)
+        user_data = User(
+            user=user,
+            name=name,
+            email=email,
+            institution=institution,
+            password=password,
+            event=event,
+        )
         js = user_data.as_json
         add_to_db(user_data)
+        send_acount_creation_webhook(user, name, event)
         return js
     except Exception as e:
         # pylint: disable=E1101
         orig = getattr(e, "orig", None)
-        if isinstance(orig, IntegrityError):
-            args = orig.args
+        if isinstance(orig, UniqueViolation):
+            args = orig.args[0]
             ret = get_integrity_error_cause(args)
             if ret is None:
                 raise AppException("User exists", HTTPStatus.BAD_REQUEST)
@@ -91,9 +121,77 @@ def login(request: _Parsed):
     )
 
 
+@require_jwt()
+def send_verification_email(req: ParsedRequest, creds: CredManager = CredManager):
+    origin = req.json.get("handler", "https://halocrypt.com/")
+    user = creds.user
+    email = get_user_by_id(user).email
+    token = create_token(issue_email_confirmation_token(user))
+    url = f"{origin}/-/confirm-email?token={token}"
+    send_email(
+        email,
+        "Confirm Email",
+        EMAIL_CONFIRMATION_TEMPLATE.format(url=url),
+        f"Confirm your email here {url}",
+    )
+    return {"success": True}
+
+
+def confirm_email(req: _Parsed):
+    token = req.json.get("token")
+    data = decode_token(token)
+    if data is None:
+        raise AppException("Token expired", HTTPStatus.UNAUTHORIZED)
+    if data["token_type"] == EMAIL_CONF_TOKEN:
+        user = data["user"]
+        u = get_user_by_id(user)
+        u.has_verified_email = True
+        save_to_db()
+        return {"success": True}
+
+    raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)
+
+
+def send_password_reset_email(req: _Parsed, user):
+    origin = req.json.get("handler", "https://halocrypt.com/")
+    user_data = get_user_by_id(user)
+    if not user:
+        raise AppException("Invalid request")
+
+    token = create_token(issue_password_reset_token(user))
+    url = f"{origin}/-/reset-password?token={token}"
+    print(url)
+    send_email(
+        user_data.email,
+        "Reset password",
+        PASSWORD_RESET_TEMPLATE.format(url=url),
+        f"Reset your password here: {url}",
+    )
+    return {"success": True}
+
+
+def verify_password_reset(req: _Parsed, user_name):
+    token = req.json.get("token")
+    new_password = req.json.get("new_password")
+    data = decode_token(token)
+
+    if data is None:
+        raise AppException("Token expired", HTTPStatus.UNAUTHORIZED)
+    if data["token_type"] == RESET_PASSWORD_TOKEN:
+        user = data["user"]
+        if user != user_name:
+            raise AppException("?")
+        u = get_user_by_id(user)
+        u.password_hash = new_password
+        save_to_db()
+        return {"success": True}
+
+    raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)
+
+
 def re_authenticate(req: _Parsed):
     headers = req.headers
-    access_token = headers.get("x-access-token")
+    access_token = get_bearer_token(req.headers)
     decoded_access = decode_token(access_token)
 
     if decoded_access is None:
@@ -122,9 +220,10 @@ def get_user_details(request: _Parsed, user: str, creds: CredManager = CredManag
         raise AppException("Not Authenticated", HTTPStatus.UNAUTHORIZED)
 
     user_details = get_user_by_id(user)
-    json = user_details.as_json
     if not creds.is_admin:
-        json.pop("_secure_")
+        json = clean_secure(user_details)
+    else:
+        json = user_details.as_json
     return {"user_data": json}
 
 
@@ -145,10 +244,19 @@ def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
     edit_field = json.get("field")
     if not creds.is_admin and edit_field not in editable_fields:
         raise AppException("Requested field cannot be edited", HTTPStatus.BAD_REQUEST)
-    new_value = json.get("new_value")
-    user_data = get_user_by_id(current_user)
 
+    new_value = json.get("new_value")
+
+    user_data = get_user_by_id(user)
+    prev = getattr(user_data, edit_field, "N/A")
+
+    if new_value == prev:
+        return user_data.as_json
     setattr(user_data, edit_field, new_value)
+    if creds.is_admin:
+        send_admin_action_webhook(creds.user, edit_field, prev, new_value, user)
+    if edit_field == "email":
+        user_data.has_verified_email = False
     save_to_db()
     return user_data.as_json
 
@@ -156,3 +264,33 @@ def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
 @require_jwt()
 def check_auth(creds=CredManager):
     return {"username": creds.user}
+
+
+def send_admin_action_webhook(who: str, key: str, prev, val: str, user: str):
+    send_webhook(
+        BACKEND_WEBHOOK_URL,
+        {
+            "embeds": [
+                {
+                    "title": "Admin Action",
+                    "description": f"{who} changed {key} of `{user}` from {prev} to {val}",
+                    "color": 0xFF0000,
+                }
+            ]
+        },
+    )
+
+
+def send_acount_creation_webhook(user, name, event):
+    send_webhook(
+        BACKEND_WEBHOOK_URL,
+        {
+            "embeds": [
+                {
+                    "title": "User Registration",
+                    "description": f"`{user}` (`{name}`) just registered for the {event} event",
+                    "color": 0x00FF00,
+                }
+            ]
+        },
+    )

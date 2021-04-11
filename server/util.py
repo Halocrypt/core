@@ -9,13 +9,13 @@ from re import compile as _compile
 from time import time
 from traceback import print_exc as _print_exc
 
-from flask import Request as _Request
+
 from flask import Response as _Response
 from flask import request as _request
 from werkzeug.datastructures import Headers
 
 # maybe only strip whitespace?
-_sub = _compile(r"([^\w]|_)").sub
+_sub = _compile(r"([^\w])").sub
 sanitize = lambda x: _sub("", x).strip().lower()
 
 
@@ -25,7 +25,7 @@ def validate_email_address(email_id: str) -> str:
     raise AppException("Invalid Email", HTTPStatus.BAD_REQUEST)
 
 
-def get_origin(request: _Request) -> str:
+def get_origin(headers: Headers, or_="*") -> str:
     """
     for CORS requests
     On client we will send the x-qbytic-origin header
@@ -37,8 +37,8 @@ def get_origin(request: _Request) -> str:
     Returns:
         str: the origin value
     """
-    get = request.headers.get
-    return get("Origin") or "*"
+    get = headers.get
+    return get("Origin") or or_
 
 
 class ParsedRequest:
@@ -92,8 +92,8 @@ def get_bearer_token(headers: Headers) -> str:
 # if you throw this error anywhere during a request execution,
 # we will send the error message in a json respose
 class AppException(Exception):
-    def __init__(self, message: str, *args, code: int = 400):
-        super().__init__(message, *args)
+    def __init__(self, message: str, code: int = 400):
+        super().__init__(message)
         self.code = code
         self.message = message
 

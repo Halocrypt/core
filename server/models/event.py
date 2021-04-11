@@ -7,19 +7,28 @@ class Event(db.Model):
     event_start_time = db.Column(db.Integer)
     event_end_time = db.Column(db.Integer)
     # kill switch
-    is_live = db.Column(db.Boolean)
+    is_over = db.Column(db.Boolean)
 
     def __init__(
         self,
         name: str,
         event_start_time: int = None,
         event_end_time: int = None,
-        is_live: bool = False,
+        is_over: bool = False,
     ) -> None:
         raise_if_invalid_data(name, event_start_time, event_end_time)
         self.name = name
+        self.event_start_time = event_start_time
         self.event_end_time = event_end_time
-        self.event_end_time = event_end_time
-        self.is_live = is_live
+        self.is_over = is_over
+
+    @property
+    def as_json(self):
+        return {
+            "name": self.name,
+            "event_start_time": self.event_start_time,
+            "event_end_time": self.event_end_time,
+            "is_over": self.is_over,
+        }
 
     # pylint: enable=E1101

@@ -1,7 +1,8 @@
+from server.constants import EVENT_NAMES
 from server.util import AppException
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableList
-from .shared import db, raise_if_invalid_data, EVENT_NAMES
+
+from .shared import db, raise_if_invalid_data
 
 
 class Question(db.Model):
@@ -13,7 +14,7 @@ class Question(db.Model):
     # intra|main
     event = db.Column(db.String(20), nullable=False)
     question_text = db.Column(db.String, nullable=False)
-    question_hints = db.Column(MutableList.as_mutable(JSONB))
+    question_hints = db.Column(JSONB)
     # answers won't be longer than 100 characters, you heard it here first
     answer = db.Column(db.String(100), nullable=False)
 

@@ -15,6 +15,7 @@ from pathlib import Path
 from time import time
 
 from flask import make_response, send_from_directory
+from flask.helpers import send_file
 
 from server.safe_io import (
     open_and_read,
@@ -25,8 +26,8 @@ from server.safe_io import (
 )
 from server.constants import CACHE_DIR
 
-DEFAULT_CACHE_TIMEOUT = 60
-DATA_SUFFIX = "#.cachedata"
+DEFAULT_CACHE_TIMEOUT = 60 * 60
+DATA_SUFFIX = "#.cachedata.json"
 
 
 def file_size(fname):
@@ -38,7 +39,7 @@ def file_size(fname):
 
 
 def get_file_name(key):
-    return f"{key}.#cache.json"
+    return f"{key}.cache.json"
 
 
 def get_cache(key, timeout):
@@ -72,13 +73,18 @@ def get_paths(key):
 
 
 def cache_data(key, data):
-    path, file_path = get_paths(key)
-    js = {"time_stamp": time(), "data": file_path}
-    open_and_write(path, dumps(js).encode())
-    open_and_write(
-        file_path,
-        dumps({"data": data}).encode() if isinstance(data, (dict, list)) else data,
-    )
+    try:
+        path, file_path = get_paths(key)
+        js = {"time_stamp": time(), "data": str(file_path.resolve())}
+        open_and_write(path, dumps(js).encode(), mode="wb")
+        open_and_write(
+            file_path,
+            dumps({"data": data}).encode() if isinstance(data, (dict, list)) else data,
+            mode="wb",
+        )
+    except:
+        close_lockfile(path)
+        close_lockfile(file_path)
 
 
 def invalidate(key):
@@ -89,10 +95,10 @@ def invalidate(key):
     close_lockfile(binary)
 
 
-def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT):
+def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
     def decorator(func):
         @wraps(func)
-        def json_cache(*args, **kwargs):
+        def flask_cache(*args, **kwargs):
             key = (
                 key_method
                 if isinstance(key_method, str)
@@ -100,13 +106,19 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT):
             )
             has_cache = get_cache(key, timeout)
             if has_cache:
-                resp = get_cache_response(has_cache)
-                return resp
+                if json_cache:
+                    try:
+                        return loads(Path(has_cache).read_text())["data"]
+                    except:
+                        pass
+                else:
+                    resp = get_cache_response(has_cache)
+                    return resp
             result = func(*args, **kwargs)
             cache_data(key, result)
             return result
 
-        return json_cache
+        return flask_cache
 
     return decorator
 
@@ -116,7 +128,7 @@ def read_cache(c, mode="r"):
 
 
 def get_cache_response(has_cache, content_type="application/json"):
-    resp = make_response(send_from_directory(CACHE_DIR, has_cache))
+    resp = make_response(send_file(has_cache))
     add_no_cache_headers(resp.headers, content_type)
     return resp
 

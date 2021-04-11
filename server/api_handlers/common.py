@@ -1,11 +1,14 @@
 from http import HTTPStatus
+from server.response_caching import cache
 from typing import List
 from sqlalchemy import func as _func
+import requests
 
-from server.models import UserTable as _U, Question as _Q
+from server.models import User as _U, Question as _Q, Event as _E
 from server.models import db as _db
 from server.util import AppException as _AppException
 from server.util import sanitize
+from server.constants import EVENT_NAMES
 
 lower = _func.lower
 count = _func.count
@@ -17,8 +20,10 @@ def add_to_db(data, batch=False):
     not batch and save_to_db()
 
 
-# def query_all(table):
-#     return table.query.all()
+def clean_secure(x):
+    js = x.as_json
+    js.pop("_secure_")
+    return js
 
 
 def save_to_db():
@@ -40,7 +45,7 @@ def get_user_by_id(idx: str) -> _U:
 def get_question_by_id(event: str, number: int) -> _Q:
     if number < 0:
         return _assert_exists(None, "Question")
-    q = _assert_exists(_Q.query.filter_by(_id=f"{event}:{number}").first())
+    q = _assert_exists(_Q.query.filter_by(_id=f"{event}:{number}").first(), "Question")
     return q
 
 
@@ -57,13 +62,39 @@ def get_next_q_level(event: str) -> int:
 
 
 def get_questions(event: str) -> List[_Q]:
-    return _Q.query.filter_by(event=event).all()
+    return _Q.query.order_by(_Q.question_number.asc()).filter_by(event=event).all()
+
+
+def get_event_by_id(event: str) -> _E:
+    if event not in EVENT_NAMES:
+        return _assert_exists(None, "Event")
+    return _assert_exists(_E.query.filter_by(name=event).first(), "Event")
+
+
+def get_user_count(event):
+    return _db.session.query(_U).filter_by(event=event).count()
 
 
 def _assert_exists(user: _U, name="User"):
     if user is None:
         raise _AppException(f"{name} does not exist", HTTPStatus.NOT_FOUND)
     return user
+
+
+@cache(lambda event: f"{event}-event-details", json_cache=True)
+def get_event_details(event):
+    ev = get_event_by_id(event)
+    return ev.as_json
+
+
+@cache(lambda event, number: f"question-{event}-{number}", json_cache=True)
+def get_question(event, number):
+    q = get_question_by_id(event, number)
+    return q.as_json
+
+
+def send_webhook(url, json):
+    return requests.post(url, json={**json, "allowed_mentions": {"parse": []}})
 
 
 # pylint: enable=E1101

@@ -9,6 +9,12 @@ def disqualify(user):
     return admin.disqualify(ParsedRequest(), user)
 
 
+@app.route("/admin/accounts/<user>/requalify/", strict_slashes=False)
+@api_response
+def requalify(user):
+    return admin.requalify(user)
+
+
 @app.route("/admin/accounts/<user>/delete/", strict_slashes=False)
 @api_response
 def delete(user):
@@ -27,7 +33,12 @@ def edit_questions(event, number):
     return admin.edit_question(ParsedRequest(), event, number)
 
 
-@app.route("/admin/<event>/questions/", strict_slashes=False)
+@app.route("/admin/events/<event>/questions/", strict_slashes=False)
 @api_response
 def list_questions(event):
     return admin.list_questions(event)
+
+
+@app.route("/admin/events/<event>/edit/", **POST_REQUEST)
+def edit_event(event):
+    return admin.edit_event(ParsedRequest(), event)

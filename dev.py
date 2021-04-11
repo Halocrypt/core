@@ -5,15 +5,15 @@ GUNICORN_COMMANDS = (
         "gunicorn",
         "-c",
         "server/gunicorn.conf.py",
-        "runner:core_app",
+        "_core:app",
         "-b",
         "localhost:5000",
     ],
-    ["gunicorn", "-c", "logserver/gunicorn.conf.py", "runner:log_app"],
+    ["gunicorn", "-c", "logserver/gunicorn.conf.py", "_log:app"],
 )
 FLASK_COMMANDS = (
-    ["python3", "runner.py", "coreserver"],
-    ["python3", "runner.py", "logserver"],
+    ["python3", "_core.py"],
+    ["python3", "_log.py"],
 )
 
 

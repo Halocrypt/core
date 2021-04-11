@@ -10,6 +10,7 @@ from .util import (
 
 
 from server.models import db
+
 app = Flask(__name__)
 
 app.secret_key = FLASK_SECRET
@@ -40,7 +41,7 @@ EXPOSE_HEADERS = ", ".join(("x-access-token", "x-refresh-token", "x-dynamic"))
 
 @app.after_request
 def cors(resp):
-    origin = get_origin(request)
+    origin = get_origin(request.headers)
     resp.headers["access-control-allow-origin"] = origin
     resp.headers["access-control-allow-headers"] = request.headers.get(
         "access-control-request-headers", "*"

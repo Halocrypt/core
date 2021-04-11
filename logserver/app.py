@@ -1,13 +1,11 @@
 import os
 
-try:
-    import handler
-except:
-    from . import handler
+import logserver.handler as handler
 
 from flask import Flask, request
 
 LOGSERVER_KEY = os.environ["LOGSERVER_KEY"]
+
 del os
 app = Flask(__name__)
 

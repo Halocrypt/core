@@ -43,8 +43,14 @@ def generate_password_hash(pw):
 
 ACCESS_TOKEN = "access"
 REFRESH_TOKEN = "refresh"
-
-_ALLOWED_TOKEN_TYPES = (ACCESS_TOKEN, REFRESH_TOKEN)
+EMAIL_CONF_TOKEN = "email_conf"
+RESET_PASSWORD_TOKEN = "reset_pass"
+_ALLOWED_TOKEN_TYPES = (
+    ACCESS_TOKEN,
+    REFRESH_TOKEN,
+    EMAIL_CONF_TOKEN,
+    RESET_PASSWORD_TOKEN,
+)
 
 _EXPIRED = _jwt.exceptions.ExpiredSignatureError
 

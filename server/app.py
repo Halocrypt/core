@@ -1,9 +1,7 @@
 from flask.helpers import send_from_directory
-from server.set_env import setup_env
 
-setup_env()
 from server.app_init import app
-from server.routes import user
+from server.routes import user, admin, play
 
 
 def serve_static_file(file: str):

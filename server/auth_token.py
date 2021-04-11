@@ -2,8 +2,11 @@
 """
 
 from http import HTTPStatus
+from time import time
 from flask import request
 from .danger import (
+    EMAIL_CONF_TOKEN,
+    RESET_PASSWORD_TOKEN,
     decode_token as decode,
     ACCESS_TOKEN,
     REFRESH_TOKEN,
@@ -15,6 +18,8 @@ from .util import AppException, get_bearer_token
 from .api_handlers.cred_manager import CredManager
 from .constants import REFRESH_TOKEN_SALT
 
+THREE_HOURS = 3 * 60 * 60
+
 
 def require_jwt(strict=True, admin_mode=False):
     # use this wherever you need the user to provide authentication data
@@ -22,7 +27,7 @@ def require_jwt(strict=True, admin_mode=False):
     def wrapper(func):
         def run(*args, **kwargs):
             access = get_token(strict=strict)
-            cred=CredManager(access)
+            cred = CredManager(access)
             kwargs["creds"] = cred
             if admin_mode and not cred.is_admin:
                 raise AppException("No.", HTTPStatus.FORBIDDEN)
@@ -38,7 +43,7 @@ def regenerate_access_token(refresh: dict) -> dict:
     integrity = refresh.get("integrity")
     data = get_user_by_id(user)
     is_admin = data.is_admin
-    current = integrity(data.user, data.password_hash)
+    current = get_integrity(data.user, data.password_hash)
     if check(integrity, current):
         return (
             issue_access_token(user, is_admin),
@@ -49,6 +54,18 @@ def regenerate_access_token(refresh: dict) -> dict:
 
 def issue_access_token(username: str, is_admin: bool):
     return {"token_type": ACCESS_TOKEN, "user": username, "is_admin": is_admin}
+
+
+def issue_email_confirmation_token(user: str):
+    return {"token_type": EMAIL_CONF_TOKEN, "user": user, "exp": time() + THREE_HOURS}
+
+
+def issue_password_reset_token(user: str):
+    return {
+        "token_type": RESET_PASSWORD_TOKEN,
+        "user": user,
+        "exp": time() + THREE_HOURS,
+    }
 
 
 def issue_refresh_token(username, password_hash):

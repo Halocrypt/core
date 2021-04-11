@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from secrets import token_urlsafe
+from server.constants import EVENT_NAMES
 from time import time
 
 
@@ -10,7 +11,7 @@ from sqlalchemy.orm import validates
 from .shared import db, raise_if_invalid_data
 
 
-class UserTable(db.Model):
+class User(db.Model):
     # pylint: disable=E1101
     _id: str = db.Column(db.String(30), unique=True, nullable=False, primary_key=True)
     user: str = db.Column(db.String(30), unique=True, nullable=False)
@@ -26,14 +27,15 @@ class UserTable(db.Model):
     level: int = db.Column(db.Integer, default=0)
     points: int = db.Column(db.Integer, default=0)
     has_verified_email: bool = db.Column(db.Boolean)
+    event: str = db.Column(db.String(10), nullable=False)
     # pylint: enable=E1101
 
     @property
     def as_json(self):
         return {
             "_id": self._id,
-            "name": self.name,
             "user": self.user,
+            "name": self.name,
             "created_at": self.created_at,
             "is_admin": self.is_admin,
             "is_disqualified": self.is_disqualified,
@@ -41,6 +43,7 @@ class UserTable(db.Model):
             "level": self.level,
             "points": self.points,
             "last_question_answered_at": self.last_question_answered_at,
+            "event": self.event,
             "_secure_": {
                 "email": self.email,
                 "institution": self.institution,
@@ -87,6 +90,12 @@ class UserTable(db.Model):
             raise AppException("Email cannot be blank")
         return validate_email_address(email)
 
+    @validates("event")
+    def _validate_event(self, key, event: str):
+        if event not in EVENT_NAMES:
+            raise AppException("Invalid event")
+        return event
+
     def __init__(
         self,
         user: str = None,
@@ -94,6 +103,7 @@ class UserTable(db.Model):
         email: str = None,
         institution: str = None,
         password: str = None,
+        event: str = None,
     ):
         raise_if_invalid_data(user, name, password)
         self._id = token_urlsafe(20)
@@ -102,9 +112,12 @@ class UserTable(db.Model):
         self.email = email
         self.password_hash = password
         self.institution = institution
+        self.event = event
         self.is_disqualified = False
+        self.disqualification_reason = None
         self.is_admin = False
         self.created_at = time()
         self.level = 0
         self.points = 0
         self.last_question_answered_at = time()
+        self.has_verified_email = False
