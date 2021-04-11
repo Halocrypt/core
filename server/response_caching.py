@@ -16,10 +16,17 @@ from time import time
 
 from flask import make_response, send_from_directory
 
-from .constants import CACHE_DIR
-from .safe_io import open_and_read, open_and_write, safe_mkdir, safe_remove
+from server.safe_io import (
+    open_and_read,
+    open_and_write,
+    close_lockfile,
+    safe_mkdir,
+    safe_remove,
+)
+from server.constants import CACHE_DIR
 
 DEFAULT_CACHE_TIMEOUT = 60
+DATA_SUFFIX = "#.cachedata"
 
 
 def file_size(fname):
@@ -56,35 +63,47 @@ def get_cache(key, timeout):
     return None
 
 
-DATA_SUFFIX = ".___data"
-
-
-def cache_json(key, data):
-
+def get_paths(key):
     fn = get_file_name(key)
     safe_mkdir(CACHE_DIR)
     path = Path(CACHE_DIR, fn)
-    file_path = f"{fn}{DATA_SUFFIX}"
+    file_path = Path(CACHE_DIR, f"{fn}{DATA_SUFFIX}")
+    return path, file_path
+
+
+def cache_data(key, data):
+    path, file_path = get_paths(key)
     js = {"time_stamp": time(), "data": file_path}
-    open_and_write(path, dumps(js))
+    open_and_write(path, dumps(js).encode())
     open_and_write(
-        Path(CACHE_DIR, file_path),
-        dumps({"data": data} if isinstance(data, (dict, list, tuple)) else data),
+        file_path,
+        dumps({"data": data}).encode() if isinstance(data, (dict, list)) else data,
     )
+
+
+def invalidate(key):
+    info, binary = get_paths(key)
+    safe_remove(info)
+    safe_remove(binary)
+    close_lockfile(info)
+    close_lockfile(binary)
 
 
 def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT):
     def decorator(func):
         @wraps(func)
         def json_cache(*args, **kwargs):
-            key = key_method if isinstance(key_method, str) else key_method(*args)
+            key = (
+                key_method
+                if isinstance(key_method, str)
+                else key_method(*args, **kwargs)
+            )
             has_cache = get_cache(key, timeout)
             if has_cache:
-                resp = make_response(send_from_directory(CACHE_DIR, has_cache))
-                add_no_cache_headers(resp.headers)
+                resp = get_cache_response(has_cache)
                 return resp
             result = func(*args, **kwargs)
-            cache_json(key, result)
+            cache_data(key, result)
             return result
 
         return json_cache
@@ -92,11 +111,21 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT):
     return decorator
 
 
-def add_no_cache_headers(headers):
+def read_cache(c, mode="r"):
+    return open_and_read(Path(CACHE_DIR) / c, mode=mode)
+
+
+def get_cache_response(has_cache, content_type="application/json"):
+    resp = make_response(send_from_directory(CACHE_DIR, has_cache))
+    add_no_cache_headers(resp.headers, content_type)
+    return resp
+
+
+def add_no_cache_headers(headers, ct):
     # make sure that the browser does not think
     # that this is a static file sent
     # we do not want dynamic content to be cacheable
-    headers["Content-Type"] = "application/json"
+    headers["Content-Type"] = ct
     headers[
         "Cache-Control"
     ] = "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"

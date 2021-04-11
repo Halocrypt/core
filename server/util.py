@@ -3,8 +3,10 @@
 # ==================================================
 from email.utils import parseaddr as _parseaddr
 from functools import wraps as _wraps
+from http import HTTPStatus
 from json import dumps as _dumps
 from re import compile as _compile
+from time import time
 from traceback import print_exc as _print_exc
 
 from flask import Request as _Request
@@ -20,7 +22,7 @@ sanitize = lambda x: _sub("", x).strip().lower()
 def validate_email_address(email_id: str) -> str:
     if "@" in _parseaddr(email_id)[1]:
         return email_id
-    raise AppException("Invalid Email")
+    raise AppException("Invalid Email", HTTPStatus.BAD_REQUEST)
 
 
 def get_origin(request: _Request) -> str:
@@ -67,13 +69,17 @@ def api_response(func):
 
         except AppException as e:
 
-            return json_response({"error": e.message}, status=e.code or 200)
+            return json_response({"error": e.message}, status=int(e.code or 200))
         except Exception as e:
             _print_exc()
             err = "An unknown error occured"
             return json_response({"error": err, "tb": f"{e}"})
 
     return run
+
+
+def js_time():
+    return int(time() * 1000)
 
 
 def get_bearer_token(headers: Headers) -> str:
@@ -83,7 +89,7 @@ def get_bearer_token(headers: Headers) -> str:
 
 
 # A special error class which is caught by our request handler
-# is you throw this error anywhere during a request execution,
+# if you throw this error anywhere during a request execution,
 # we will send the error message in a json respose
 class AppException(Exception):
     def __init__(self, message: str, *args, code: int = 400):

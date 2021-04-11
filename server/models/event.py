@@ -1,0 +1,25 @@
+from .shared import db, raise_if_invalid_data
+
+
+class Event(db.Model):
+    # pylint: disable=E1101
+    name = db.Column(db.String(20), primary_key=True)
+    event_start_time = db.Column(db.Integer)
+    event_end_time = db.Column(db.Integer)
+    # kill switch
+    is_live = db.Column(db.Boolean)
+
+    def __init__(
+        self,
+        name: str,
+        event_start_time: int = None,
+        event_end_time: int = None,
+        is_live: bool = False,
+    ) -> None:
+        raise_if_invalid_data(name, event_start_time, event_end_time)
+        self.name = name
+        self.event_end_time = event_end_time
+        self.event_end_time = event_end_time
+        self.is_live = is_live
+
+    # pylint: enable=E1101

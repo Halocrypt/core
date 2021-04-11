@@ -6,6 +6,7 @@
 #   or requesting a new access_token to be done elsewhere )
 # ==============================================================
 
+from http import HTTPStatus
 from time import time as _time
 
 import jwt as _jwt
@@ -66,7 +67,7 @@ def decode_token(data: str) -> dict:
         return None
     except Exception as e:
         print(e)
-        raise AppException("Invalid token", 400)
+        raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)
 
 
 def to_str(x):

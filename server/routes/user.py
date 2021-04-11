@@ -1,4 +1,4 @@
-from server.api_handlers import users
+from server.api_handlers import user
 from server.app_init import app
 from server.util import POST_REQUEST, ParsedRequest, api_response, json_response
 
@@ -9,19 +9,19 @@ from server.util import POST_REQUEST, ParsedRequest, api_response, json_response
 @app.route("/register", **POST_REQUEST)
 @api_response
 def register():
-    return users.register(ParsedRequest())
+    return user.register(ParsedRequest())
 
 
 @app.route("/accounts/login", **POST_REQUEST)
 @api_response
 def login():
-    return users.login(ParsedRequest())
+    return user.login(ParsedRequest())
 
 
 @app.route("/accounts/whoami/", strict_slashes=False)
 @api_response
 def check_auth_resp():
-    return users.check_auth()
+    return user.check_auth()
 
 
 # refresh the JWT Token
@@ -29,7 +29,7 @@ def check_auth_resp():
 @app.route("/accounts/token/refresh/", strict_slashes=False)
 @api_response
 def refesh_token():
-    return users.re_authenticate(ParsedRequest())
+    return user.re_authenticate(ParsedRequest())
 
 
 # ===========================================================================
@@ -41,14 +41,14 @@ def refesh_token():
 @app.route("/accounts/<user>/", strict_slashes=False)
 @api_response
 def user_details(user):
-    return users.get_user_details(ParsedRequest(), user)
+    return user.get_user_details(ParsedRequest(), user)
 
 
 # edit user info, only authenticated requests allowed
 @app.route("/accounts/<user>/edit/", **POST_REQUEST)
 @api_response
 def edit_user(user):
-    return users.edit(ParsedRequest(), user)
+    return user.edit(ParsedRequest(), user)
 
 
 @app.route("/logout/", strict_slashes=False)
