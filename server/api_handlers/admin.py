@@ -112,3 +112,8 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
     invalidate(f"{event}-event-details")
     save_to_db()
     return {"success": True}
+
+
+@require_jwt(admin_mode=True)
+def notification_key():
+    return

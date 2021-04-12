@@ -42,3 +42,8 @@ def list_questions(event):
 @app.route("/admin/events/<event>/edit/", **POST_REQUEST)
 def edit_event(event):
     return admin.edit_event(ParsedRequest(), event)
+
+
+@app.route("/admin/notificaton-key/",strict_slashes=False)
+def notification_key():
+    return admin.notification_key()
