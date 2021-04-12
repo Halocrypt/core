@@ -28,12 +28,12 @@ def gate_check():
 
 @app.errorhandler(404)
 def catch_all(e):
-    return json_response({"error": "not found"})
+    return json_response({"error": "not found"}, 400)
 
 
 @app.errorhandler(405)
 def method_not_allowed(e):
-    return json_response({"error": "Method not allowed"})
+    return json_response({"error": "Method not allowed"}, 405)
 
 
 EXPOSE_HEADERS = ", ".join(("x-access-token", "x-refresh-token", "x-dynamic"))

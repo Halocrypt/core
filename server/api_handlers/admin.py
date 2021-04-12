@@ -1,3 +1,4 @@
+from server.constants import NOTIFICATION_KEY
 from server.models.question import Question
 from server.api_handlers.common import (
     add_to_db,
@@ -114,6 +115,6 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
     return {"success": True}
 
 
-@require_jwt(admin_mode=True)
+@require_jwt(admin_mode=True, creds=CredManager)
 def notification_key():
-    return
+    return NOTIFICATION_KEY
