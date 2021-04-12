@@ -8,7 +8,7 @@ from server.api_handlers.templates import (
 
 
 from server.api_handlers.email import send_email
-from server.constants import BACKEND_WEBHOOK_URL
+from server.constants import BACKEND_WEBHOOK_URL, EVENT_NAMES
 
 # pylint: disable=no-name-in-module
 from psycopg2.errors import UniqueViolation
@@ -123,13 +123,12 @@ def login(request: _Parsed):
 
 @require_jwt()
 def send_verification_email(req: ParsedRequest, creds: CredManager = CredManager):
-    origin = req.json.get("handler", "https://halocrypt.com/")
+    handler = get_subdomain(req.json.get("handler"))
     user = creds.user
-    email = get_user_by_id(user).email
     token = create_token(issue_email_confirmation_token(user))
-    url = f"{origin}/-/confirm-email?token={token}"
+    url = f"{handler}.halocrypt.com/-/confirm-email?token={token}"
     send_email(
-        email,
+        user.email,
         "Confirm Email",
         EMAIL_CONFIRMATION_TEMPLATE.format(url=url),
         f"Confirm your email here {url}",
@@ -153,14 +152,14 @@ def confirm_email(req: _Parsed):
 
 
 def send_password_reset_email(req: _Parsed, user):
-    origin = req.json.get("handler", "https://halocrypt.com/")
+    handler = get_subdomain(req.json.get("handler"))
+
+    token = create_token(issue_password_reset_token(user))
+    url = f"{handler}.halocrypt.com/-/reset-password?token={token}"
+
     user_data = get_user_by_id(user)
     if not user:
         raise AppException("Invalid request")
-
-    token = create_token(issue_password_reset_token(user))
-    url = f"{origin}/-/reset-password?token={token}"
-    print(url)
     send_email(
         user_data.email,
         "Reset password",
@@ -168,6 +167,12 @@ def send_password_reset_email(req: _Parsed, user):
         f"Reset your password here: {url}",
     )
     return {"success": True}
+
+
+def get_subdomain(handler):
+    if handler not in EVENT_NAMES:
+        raise AppException("Invalid handler")
+    return "www" if handler == "main" else handler
 
 
 def verify_password_reset(req: _Parsed, user_name):
