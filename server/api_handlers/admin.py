@@ -115,6 +115,6 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
     return {"success": True}
 
 
-@require_jwt(admin_mode=True, creds=CredManager)
-def notification_key():
+@require_jwt(admin_mode=True)
+def notification_key(creds=CredManager):
     return NOTIFICATION_KEY
