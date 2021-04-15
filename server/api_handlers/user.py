@@ -95,7 +95,7 @@ def register(request: _Parsed):
 def login(request: _Parsed):
     json = request.json
     get = json.get
-    user = get("user", "").strip()
+    user = get("user", "").strip().lower()
     password = get("password", "")
     invalids = []
     if not user:
