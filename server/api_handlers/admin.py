@@ -1,20 +1,27 @@
-from server.constants import NOTIFICATION_KEY
+from server.constants import NOTIFICATION_KEY, REMOTE_LOG_DB_KEY
 from server.models.question import Question
 from server.api_handlers.common import (
     add_to_db,
     delete_from_db,
     get_event_by_id,
+    get_events_list,
     get_next_q_level,
     get_question_by_id,
-    get_questions,
+    get_question_list,
     get_user_by_id,
+    get_user_list,
     save_to_db,
 )
 from server.api_handlers.cred_manager import CredManager
 from server.util import AppException, ParsedRequest
 
 from server.auth_token import require_jwt
-from server.response_caching import invalidate
+from server.response_caching import cache, invalidate
+
+
+@require_jwt(admin_mode=True)
+def event_users(event: str, creds=CredManager):
+    return [x.as_json for x in get_user_list(event)]
 
 
 @require_jwt(admin_mode=True)
@@ -25,6 +32,8 @@ def disqualify(req: ParsedRequest, user, *, creds: CredManager = CredManager):
     if deduct_points < 0:
         raise AppException("You're adding points! Don't use negative symbol")
     user_data = get_user_by_id(user)
+    if user_data.is_admin:
+        raise AppException("Cannot disqualify an admin!")
     user_data.is_disqualified = True
     user_data.disqualification_reason = reason
     user_data.points -= deduct_points
@@ -48,6 +57,8 @@ def requalify(user, creds=CredManager):
 @require_jwt(admin_mode=True)
 def delete(user, creds: CredManager = CredManager):
     user_data = get_user_by_id(user)
+    if user_data.is_admin:
+        raise AppException("Cannot delete an admin account!")
     delete_from_db(user_data)
     return {"success": True}
 
@@ -63,15 +74,16 @@ def edit_question(req: ParsedRequest, event: str, number: int, creds=CredManager
 
 
 @require_jwt(admin_mode=True)
+@cache(lambda event, **_: f"{event}-questions-list")
 def list_questions(event, creds=CredManager):
-    return [x.as_json for x in get_questions(event)]
+    return [x.as_json for x in get_question_list(event)]
 
 
 def question_mutation(json: dict, event: str, question_number=None):
-    points = json["points"]
-    text = json.get("question_text")
-    hints = json.get("hints")
-    answer = json.get("answer")
+    points = json["question_points"]
+    content = json["question_content"]
+    hints = json["question_hints"]
+    answer = json["answer"]
     if question_number is None:
         number = get_next_q_level(event)
 
@@ -79,7 +91,7 @@ def question_mutation(json: dict, event: str, question_number=None):
             question_number=number,
             question_points=points,
             event=event,
-            question_text=text,
+            question_content=content,
             question_hints=hints,
             answer=answer,
         )
@@ -88,11 +100,12 @@ def question_mutation(json: dict, event: str, question_number=None):
     else:
         question = get_question_by_id(event, question_number)
         question.question_points = points or question.points
-        question.question_text = text or question.question_text
+        question.question_content = content or question.question_content
         question.question_hints = hints or question.question_hints
         question.answer = answer or question.answer
         js = question.as_json
         invalidate(f"question-{event}-{question_number}")
+    invalidate(f"{event}-questions-list")
     save_to_db()
     return js
 
@@ -111,10 +124,22 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
     ev.is_over = is_over
 
     invalidate(f"{event}-event-details")
+    invalidate("admin-events-list")
     save_to_db()
     return {"success": True}
 
 
 @require_jwt(admin_mode=True)
+@cache("admin-events-list")
+def list_events(creds=CredManager):
+    return get_events_list()
+
+
+@require_jwt(admin_mode=True)
 def notification_key(creds=CredManager):
     return NOTIFICATION_KEY
+
+
+@require_jwt(admin_mode=True)
+def logserver_key(creds=CredManager):
+    return REMOTE_LOG_DB_KEY

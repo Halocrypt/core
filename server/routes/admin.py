@@ -3,6 +3,12 @@ from server.util import POST_REQUEST, ParsedRequest, api_response
 from server.api_handlers import admin
 
 
+@app.route("/admin/<event>/users/", strict_slashes=False)
+@api_response
+def event_users(event):
+    return admin.event_users(event)
+
+
 @app.route("/admin/accounts/<user>/disqualify/", **POST_REQUEST)
 @api_response
 def disqualify(user):
@@ -45,7 +51,19 @@ def edit_event(event):
     return admin.edit_event(ParsedRequest(), event)
 
 
+@app.route("/admin/events/", strict_slashes=False)
+@api_response
+def list_events():
+    return admin.list_events()
+
+
 @app.route("/admin/notificaton-key/", strict_slashes=False)
 @api_response
 def notification_key():
     return admin.notification_key()
+
+
+@app.route("/admin/yek-revresgol/", strict_slashes=False)
+@api_response
+def logserver_key():
+    return admin.logserver_key()

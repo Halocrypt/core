@@ -24,7 +24,7 @@ BOT_ACCESS_KEY = _environ["BOT_ACCESS_KEY"]
 MAIL_USER = _environ["MAIL_USER"]
 MAIL_PASS = _environ["MAIL_PASS"]
 NOTIFICATION_KEY = _environ["NOTIFICATION_KEY"]
-
+REMOTE_LOG_DB_KEY = _environ["REMOTE_LOG_DB_KEY"]
 CACHE_DIR = str(Path(path.dirname(path.realpath(__file__)), "@cache").resolve())
 EVENT_NAMES = ("intra", "main", "dev")
 

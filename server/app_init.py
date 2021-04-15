@@ -13,6 +13,7 @@ from server.models import db
 
 app = Flask(__name__)
 
+
 app.secret_key = FLASK_SECRET
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

@@ -88,6 +88,12 @@ def get_bearer_token(headers: Headers) -> str:
     return auth.replace("Bearer", "", 1).strip()
 
 
+def validate_num(x):
+    if isinstance(x, int) or str(x).isdigit():
+        return int(x)
+    raise AppException("Expected number")
+
+
 # A special error class which is caught by our request handler
 # if you throw this error anywhere during a request execution,
 # we will send the error message in a json respose

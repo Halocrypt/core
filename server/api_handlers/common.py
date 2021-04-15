@@ -61,7 +61,11 @@ def get_next_q_level(event: str) -> int:
     return t + 1 if t is not None else 0
 
 
-def get_questions(event: str) -> List[_Q]:
+def get_user_list(event: str) -> List[_U]:
+    return _U.query.filter_by(event=event).all()
+
+
+def get_question_list(event: str) -> List[_Q]:
     return _Q.query.order_by(_Q.question_number.asc()).filter_by(event=event).all()
 
 
@@ -69,6 +73,10 @@ def get_event_by_id(event: str) -> _E:
     if event not in EVENT_NAMES:
         return _assert_exists(None, "Event")
     return _assert_exists(_E.query.filter_by(name=event).first(), "Event")
+
+
+def get_events_list():
+    return [x.as_json for x in _E.query.all()]
 
 
 def get_user_count(event):
