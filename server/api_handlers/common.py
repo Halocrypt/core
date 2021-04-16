@@ -52,7 +52,7 @@ def get_question_by_id(event: str, number: int) -> _Q:
 def get_latest_q_level(event: str) -> int:
     _assert_exists(event or None, "Event")
     t = _func.max(_Q.question_number)
-    curr = _db.session.query(t).filter_by(event=event).first()[0]
+    curr = _db.session.query(t).filter(_Q.event==event).first()[0]
     return curr
 
 
