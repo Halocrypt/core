@@ -10,7 +10,7 @@ LOG_FOLDER = Path(path.dirname(path.realpath(__file__)), "@logs")
 
 del path
 del environ
-BYTES_IN_1MB = 1024 * 1024
+BYTES_IN_1MB = 1024
 
 
 def file_size(fname):
@@ -51,11 +51,13 @@ def send_file_contents(file: Path):
     try:
         send_to_log_server(data)
         file.write_bytes(b"")
-    except:
+    except Exception as e:
+        print("error:", e)
         pass
 
 
 def send_to_log_server(data: bytes):
+    print("Sending")
     requests.post(
         f"{LOG_SERVER}/add",
         data=data,
