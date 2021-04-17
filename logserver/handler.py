@@ -48,8 +48,11 @@ def append(file: Path, line: bytes):
 
 def send_file_contents(file: Path):
     data = file.read_bytes()
-    file.write_bytes(b"")
-    send_to_log_server(data)
+    try:
+        send_to_log_server(data)
+        file.write_bytes(b"")
+    except:
+        pass
 
 
 def send_to_log_server(data: bytes):
@@ -60,4 +63,4 @@ def send_to_log_server(data: bytes):
             "content-type": "application/octet-stream",
             "x-access-key": ACCESS_KEY,
         },
-    )
+    ).raise_for_status()
