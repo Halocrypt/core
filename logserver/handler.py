@@ -10,7 +10,7 @@ LOG_FOLDER = Path(path.dirname(path.realpath(__file__)), "@logs")
 
 del path
 del environ
-BYTES_IN_1MB = 1024
+BYTES_IN_1MB = 1024 * 1024
 
 
 def file_size(fname):
