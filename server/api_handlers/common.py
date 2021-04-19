@@ -52,7 +52,7 @@ def get_question_by_id(event: str, number: int) -> _Q:
 def get_latest_q_level(event: str) -> int:
     _assert_exists(event or None, "Event")
     t = _func.max(_Q.question_number)
-    curr = _db.session.query(t).filter(_Q.event==event).first()[0]
+    curr = _db.session.query(t).filter(_Q.event == event).first()[0]
     return curr
 
 
@@ -76,7 +76,7 @@ def get_event_by_id(event: str) -> _E:
 
 
 def get_events_list():
-    return [x.as_json for x in _E.query.all()]
+    return [x.as_json for x in _E.query.order_by(_E.name.desc()).all()]
 
 
 def get_user_count(event):
