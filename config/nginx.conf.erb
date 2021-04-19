@@ -33,14 +33,14 @@ http {
         server_name _;
         keepalive_timeout 5;
         add_header	X-Frame-Options "DENY";
-        if ($http_x_forwarded_proto != "https") {
-            return 301 https://$host$request_uri;
-        }
+        add_header X-Served-By "nginx";
+        # if ($http_x_forwarded_proto != "https") {
+        #     return 301 https://$host$request_uri;
+        # }
 
         location / {
             proxy_set_header Host $http_host;
             proxy_redirect off;
-            add_header x-served-by "nginx";
             proxy_pass http://app_server;
         }
         location /docs/ {

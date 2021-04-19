@@ -21,8 +21,16 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 
+def resolver(req):
+    headers = req.headers
+    cf = headers.get("cf-connecting-ip")
+    if cf:
+        return cf
+    return headers.get("x-forwarded-for", req.remote_addr).split(",")[-1].strip()
+
+
 @app.before_request
-@guard(ban_time=5, ip_resolver="heroku" if IS_PROD else None, request_count=50, per=15)
+@guard(ban_time=5, ip_resolver=resolver if IS_PROD else None, request_count=50, per=15)
 def gate_check():
     pass
 
