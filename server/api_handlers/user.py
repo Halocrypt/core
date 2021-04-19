@@ -238,30 +238,37 @@ def self_details(creds: CredManager):
     return {"user_data": resp}
 
 
+editable_fields = ("email", "institution", "name")
+
+
 @require_jwt()
 def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
     current_user = creds.user
     if user != current_user and not creds.is_admin:
         raise AppException("Cannot edit ( not allowed )", HTTPStatus.FORBIDDEN)
-    editable_fields = ("email", "institution", "name")
 
     json = request.json
-    edit_field = json.get("field")
-    if not creds.is_admin and edit_field not in editable_fields:
+    keys = json.keys()
+
+    if any(x not in editable_fields for x in keys) and not creds.is_admin:
         raise AppException("Requested field cannot be edited", HTTPStatus.BAD_REQUEST)
 
-    new_value = json.get("new_value")
-
     user_data = get_user_by_id(user)
-    prev = getattr(user_data, edit_field, "N/A")
+    text = []
+    who = creds.user
+    for k, v in json.items():
+        prev = getattr(user_data, k, "N/A")
+        if prev == v:
+            continue
+        setattr(user_data, k, v)
+        if creds.is_admin:
+            text.append(f"{who} changed {k} of `{user}` from `{prev}` to `{v}`")
 
-    if new_value == prev:
-        return user_data.as_json
-    setattr(user_data, edit_field, new_value)
-    if creds.is_admin:
-        send_admin_action_webhook(creds.user, edit_field, prev, new_value, user)
-    if edit_field == "email":
-        user_data.has_verified_email = False
+        if k == "email":
+            user_data.has_verified_email = False
+
+    if creds.is_admin and text:
+        send_admin_action_webhook(text)
     save_to_db()
     return user_data.as_json
 
@@ -271,14 +278,14 @@ def check_auth(creds=CredManager):
     return {"username": creds.user}
 
 
-def send_admin_action_webhook(who: str, key: str, prev, val: str, user: str):
+def send_admin_action_webhook(text):
     send_webhook(
         BACKEND_WEBHOOK_URL,
         {
             "embeds": [
                 {
                     "title": "Admin Action",
-                    "description": f"{who} changed {key} of `{user}` from {prev} to {val}",
+                    "description": "\n".join(text),
                     "color": 0xFF0000,
                 }
             ]
