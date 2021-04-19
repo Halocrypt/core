@@ -62,7 +62,7 @@ def get_next_q_level(event: str) -> int:
 
 
 def get_user_list(event: str) -> List[_U]:
-    return _U.query.filter_by(event=event).all()
+    return _U.query.order_by(_U.user.asc()).filter_by(event=event).all()
 
 
 def get_question_list(event: str) -> List[_Q]:
