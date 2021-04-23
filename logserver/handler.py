@@ -40,6 +40,12 @@ def push_log(t: str, line: bytes):
     collect()
 
 
+def flush_log(t: str):
+    file = log_file(t)
+    if t == "cf" and file_size(file):
+        send_file_contents(file)
+
+
 def append(file: Path, line: bytes):
     with file.open("ab") as f:
         f.write(line)

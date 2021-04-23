@@ -1,22 +1,15 @@
-from server.constants import NOTIFICATION_KEY, REMOTE_LOG_DB_KEY
-from server.models.question import Question
-from server.api_handlers.common import (
-    add_to_db,
-    delete_from_db,
-    get_event_by_id,
-    get_events_list,
-    get_next_q_level,
-    get_question_by_id,
-    get_question_list,
-    get_user_by_id,
-    get_user_list,
-    save_to_db,
-)
+import requests
+from server.api_handlers.common import (add_to_db, delete_from_db,
+                                        get_event_by_id, get_events_list,
+                                        get_next_q_level, get_question_by_id,
+                                        get_question_list, get_user_by_id,
+                                        get_user_list, save_to_db)
 from server.api_handlers.cred_manager import CredManager
-from server.util import AppException, ParsedRequest
-
 from server.auth_token import require_jwt
+from server.constants import LOGSERVER_KEY, NOTIFICATION_KEY, REMOTE_LOG_DB_KEY
+from server.models.question import Question
 from server.response_caching import cache, invalidate
+from server.util import AppException, ParsedRequest
 
 
 @require_jwt(admin_mode=True)
@@ -142,4 +135,8 @@ def notification_key(creds=CredManager):
 
 @require_jwt(admin_mode=True)
 def logserver_key(creds=CredManager):
+    requests.get(
+        "http://localhost:5001/cf/flush",
+        headers={"x-logserver-key": LOGSERVER_KEY},
+    )
     return REMOTE_LOG_DB_KEY

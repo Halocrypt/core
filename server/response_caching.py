@@ -106,6 +106,7 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
             )
             has_cache = get_cache(key, timeout)
             if has_cache:
+                print("Cache hit:", key)
                 if json_cache:
                     try:
                         return loads(Path(has_cache).read_text())["data"]
@@ -114,6 +115,7 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
                 else:
                     resp = get_cache_response(has_cache)
                     return resp
+            print("Cache miss:", key)
             result = func(*args, **kwargs)
             cache_data(key, result)
             return result

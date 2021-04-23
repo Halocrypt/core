@@ -20,5 +20,14 @@ def index(t):
     return "", 201
 
 
+@app.route("/<t>/flush")
+def flush(t):
+    key = request.headers.get("x-logserver-key")
+    if key != LOGSERVER_KEY:
+        return "", 403
+    handler.flush_log(t)
+    return "", 202
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
