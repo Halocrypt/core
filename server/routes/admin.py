@@ -72,4 +72,4 @@ def logserver_key():
 @app.route("/admin/<event>/user-count/", strict_slashes=False)
 @api_response
 def user_count(event):
-    return admin.user_count(ParsedRequest(), event)
+    return admin.user_count(event)

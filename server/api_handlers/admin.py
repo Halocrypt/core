@@ -146,7 +146,8 @@ def notification_key(creds=CredManager):
 
 
 @require_jwt(admin_mode=True)
-def user_count(req: ParsedRequest, event,creds=CredManager):
+@cache(lambda event, **_: f"{event}-user-count", timeout=20)
+def user_count(event, creds=CredManager):
     return get_user_count(event)
 
 
