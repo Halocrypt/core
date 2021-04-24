@@ -27,7 +27,7 @@ from server.safe_io import (
 from server.constants import CACHE_DIR
 
 DEFAULT_CACHE_TIMEOUT = 60 * 60
-DATA_SUFFIX = "#.cachedata.json"
+DATA_SUFFIX = ".cache.json"
 
 
 def file_size(fname):
@@ -39,7 +39,7 @@ def file_size(fname):
 
 
 def get_file_name(key):
-    return f"{key}.cache.json"
+    return f"{key}.meta.json"
 
 
 def get_cache(key, timeout):
@@ -50,7 +50,8 @@ def get_cache(key, timeout):
         return None
     try:
         data = loads(data)
-    except:
+    except Exception as e:
+        print(e)
         safe_mkdir(path)
         return None
 
@@ -68,7 +69,7 @@ def get_paths(key):
     fn = get_file_name(key)
     safe_mkdir(CACHE_DIR)
     path = Path(CACHE_DIR, fn)
-    file_path = Path(CACHE_DIR, f"{fn}{DATA_SUFFIX}")
+    file_path = Path(CACHE_DIR, f"{key}{DATA_SUFFIX}")
     return path, file_path
 
 
@@ -82,7 +83,8 @@ def cache_data(key, data):
             dumps({"data": data}).encode() if isinstance(data, (dict, list)) else data,
             mode="wb",
         )
-    except:
+    except Exception as e:
+        print(e)
         close_lockfile(path)
         close_lockfile(file_path)
 

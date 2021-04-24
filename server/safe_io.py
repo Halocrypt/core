@@ -53,7 +53,6 @@ def open_and_write(filename: Path, data, should_wait_for_lockfile=False, mode="w
     elif _lockfile_exists(filename):
         return None
     create_lockfile(filename)
-
     filename.write_text(data) if mode == "w" else filename.write_bytes(data)
     close_lockfile(filename)
 
