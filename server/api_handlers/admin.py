@@ -1,9 +1,18 @@
 import requests
-from server.api_handlers.common import (add_to_db, delete_from_db,
-                                        get_event_by_id, get_events_list,
-                                        get_next_q_level, get_question_by_id,
-                                        get_question_list, get_user_by_id,
-                                        get_user_list, save_to_db)
+from server.api_handlers.common import (
+    add_to_db,
+    delete_from_db,
+    get_event_by_id,
+    get_events_list,
+    get_next_q_level,
+    get_question_by_id,
+    get_question_list,
+    get_user_by_id,
+    get_user_list,
+    save_to_db,
+    send_admin_action_webhook,
+    get_user_count,
+)
 from server.api_handlers.cred_manager import CredManager
 from server.auth_token import require_jwt
 from server.constants import LOGSERVER_KEY, NOTIFICATION_KEY, REMOTE_LOG_DB_KEY
@@ -32,6 +41,7 @@ def disqualify(req: ParsedRequest, user, *, creds: CredManager = CredManager):
     user_data.points -= deduct_points
     js = user_data.as_json
     invalidate(f"{user_data.event}-leaderboard")
+    send_admin_action_webhook([f"{user} was disqualified by {creds.user}"])
     save_to_db()
     return js
 
@@ -44,6 +54,7 @@ def requalify(user, creds=CredManager):
     js = user_data.as_json
     invalidate(f"{user_data.event}-leaderboard")
     save_to_db()
+    send_admin_action_webhook([f"{user} was requalified by {creds.user}"])
     return js
 
 
@@ -53,6 +64,7 @@ def delete(user, creds: CredManager = CredManager):
     if user_data.is_admin:
         raise AppException("Cannot delete an admin account!")
     delete_from_db(user_data)
+    send_admin_action_webhook([f"{user} was deleted by {creds.user}"])
     return {"success": True}
 
 
@@ -131,6 +143,11 @@ def list_events(creds=CredManager):
 @require_jwt(admin_mode=True)
 def notification_key(creds=CredManager):
     return NOTIFICATION_KEY
+
+
+@require_jwt(admin_mode=True)
+def user_count(req: ParsedRequest, event):
+    return get_user_count(event)
 
 
 @require_jwt(admin_mode=True)

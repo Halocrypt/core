@@ -19,9 +19,3 @@ def question(event):
 @api_response
 def answer(event):
     return play.answer(ParsedRequest(), event)
-
-
-@app.route("/play/<event>/user-count/", strict_slashes=False)
-@api_response
-def user_count(event):
-    return play.user_count(ParsedRequest(), event)

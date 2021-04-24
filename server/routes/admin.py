@@ -67,3 +67,9 @@ def notification_key():
 @api_response
 def logserver_key():
     return admin.logserver_key()
+
+
+@app.route("/admin/<event>/user-count/", strict_slashes=False)
+@api_response
+def user_count(event):
+    return admin.user_count(ParsedRequest(), event)

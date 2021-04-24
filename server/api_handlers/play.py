@@ -81,12 +81,6 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
         raise Exception("An unknown error occured")
 
 
-def user_count(req: ParsedRequest, event):
-    if req.headers.get("x-access-key") != BOT_ACCESS_KEY:
-        raise AppException("No", HTTPStatus.FORBIDDEN)
-    return get_user_count(event)
-
-
 def is_hunt_running(event):
     ev = get_event_details(event)
     curr_time = time()

@@ -8,7 +8,7 @@ from server.models import User as _U, Question as _Q, Event as _E
 from server.models import db as _db
 from server.util import AppException as _AppException
 from server.util import sanitize
-from server.constants import EVENT_NAMES
+from server.constants import EVENT_NAMES, BACKEND_WEBHOOK_URL
 
 lower = _func.lower
 count = _func.count
@@ -103,6 +103,36 @@ def get_question(event, number):
 
 def send_webhook(url, json):
     return requests.post(url, json={**json, "allowed_mentions": {"parse": []}})
+
+
+def send_admin_action_webhook(text):
+    send_webhook(
+        BACKEND_WEBHOOK_URL,
+        {
+            "embeds": [
+                {
+                    "title": "Admin Action",
+                    "description": "\n".join(text),
+                    "color": 0xFF0000,
+                }
+            ]
+        },
+    )
+
+
+def send_acount_creation_webhook(user, name, event):
+    send_webhook(
+        BACKEND_WEBHOOK_URL,
+        {
+            "embeds": [
+                {
+                    "title": "User Registration",
+                    "description": f"`{user}` (`{name}`) just registered for the {event} event",
+                    "color": 0x00FF00,
+                }
+            ]
+        },
+    )
 
 
 # pylint: enable=E1101

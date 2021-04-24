@@ -4,11 +4,13 @@ from re import compile as _compile
 from server.api_handlers.templates import (
     EMAIL_CONFIRMATION_TEMPLATE,
     PASSWORD_RESET_TEMPLATE,
+    send_admin_action_webhook,
+    send_acount_creation_webhook,
 )
 
 
 from server.api_handlers.email import send_email
-from server.constants import BACKEND_WEBHOOK_URL, EVENT_NAMES
+from server.constants import EVENT_NAMES
 
 # pylint: disable=no-name-in-module
 from psycopg2.errors import UniqueViolation
@@ -276,33 +278,3 @@ def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
 @require_jwt()
 def check_auth(creds=CredManager):
     return {"username": creds.user}
-
-
-def send_admin_action_webhook(text):
-    send_webhook(
-        BACKEND_WEBHOOK_URL,
-        {
-            "embeds": [
-                {
-                    "title": "Admin Action",
-                    "description": "\n".join(text),
-                    "color": 0xFF0000,
-                }
-            ]
-        },
-    )
-
-
-def send_acount_creation_webhook(user, name, event):
-    send_webhook(
-        BACKEND_WEBHOOK_URL,
-        {
-            "embeds": [
-                {
-                    "title": "User Registration",
-                    "description": f"`{user}` (`{name}`) just registered for the {event} event",
-                    "color": 0x00FF00,
-                }
-            ]
-        },
-    )
