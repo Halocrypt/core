@@ -4,8 +4,6 @@ from re import compile as _compile
 from server.api_handlers.templates import (
     EMAIL_CONFIRMATION_TEMPLATE,
     PASSWORD_RESET_TEMPLATE,
-    send_admin_action_webhook,
-    send_acount_creation_webhook,
 )
 
 
@@ -34,7 +32,14 @@ from server.util import AppException, ParsedRequest, get_bearer_token
 from server.util import ParsedRequest as _Parsed
 from server.util import json_response
 
-from .common import add_to_db, clean_secure, get_user_by_id, save_to_db, send_webhook
+from .common import (
+    add_to_db,
+    clean_secure,
+    get_user_by_id,
+    save_to_db,
+    send_admin_action_webhook,
+    send_acount_creation_webhook,
+)
 from .cred_manager import CredManager
 
 # regex to find the offending column

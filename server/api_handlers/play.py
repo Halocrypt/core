@@ -10,7 +10,6 @@ from server.api_handlers.common import (
     get_event_details,
     get_question,
     get_user_by_id,
-    get_user_count,
     save_to_db,
 )
 from server.api_handlers.cred_manager import CredManager
