@@ -20,7 +20,6 @@ DATABASE_URL = _environ["DATABASE_URL"].replace("postgres://", "postgresql://", 
 REFRESH_TOKEN_SALT = _environ["REFRESH_TOKEN_SALT"]
 BACKEND_WEBHOOK_URL = _environ["BACKEND_WEBHOOK_URL"]
 
-BOT_ACCESS_KEY = _environ["BOT_ACCESS_KEY"]
 MAIL_USER = _environ["MAIL_USER"]
 MAIL_PASS = _environ["MAIL_PASS"]
 NOTIFICATION_KEY = _environ["NOTIFICATION_KEY"]

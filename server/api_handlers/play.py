@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from server.constants import BOT_ACCESS_KEY, LOGSERVER_KEY
+from server.constants import LOGSERVER_KEY
 from server.response_caching import cache
 from time import time
 
