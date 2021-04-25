@@ -36,12 +36,12 @@ def gate_check():
 
 
 @app.errorhandler(404)
-def catch_all(e):
+def catch_all(_):
     return json_response({"error": "not found"}, 400)
 
 
 @app.errorhandler(405)
-def method_not_allowed(e):
+def method_not_allowed(_):
     return json_response({"error": "Method not allowed"}, 405)
 
 
@@ -59,4 +59,8 @@ def cors(resp):
     resp.headers["x-dynamic"] = "true"
     resp.headers["access-control-max-age"] = "86400"
     resp.headers["access-control-expose-headers"] = EXPOSE_HEADERS
+    resp.headers[
+        "access-control-allow-methods"
+    ] = "GET, POST, PATCH, PUT, OPTIONS, DELETE"
+
     return resp

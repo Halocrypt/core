@@ -104,4 +104,5 @@ class AppException(Exception):
         self.message = message
 
 
-POST_REQUEST = dict(strict_slashes=False, methods=["post"])
+def crud(*methods):
+    return {"strict_slashes": False, "methods": methods}

@@ -1,75 +1,82 @@
+from server.resolvers import admin
 from server.app_init import app
-from server.util import POST_REQUEST, ParsedRequest, api_response
-from server.api_handlers import admin
+from server.util import api_response, crud
 
 
-@app.route("/admin/<event>/users/", strict_slashes=False)
+user_list_resolver = admin.UserListResolver()
+disqualification_resolver = admin.DisqualificationResolver()
+requalification_resolver = admin.RequalificationResolver()
+add_question_resolver = admin.AddQuestionResolver()
+edit_question_resolver = admin.EditQuestionResolver()
+question_list_resolver = admin.QuestionListResolver()
+event_list_resolver = admin.EventListResolver()
+event_edit_resolver = admin.EventEditResolver()
+notification_key_resolver = admin.NotificationKeyResolver()
+logserver_key_resolver = admin.LogserverKeyResolver()
+user_count_resolver = admin.UserCountResolver()
+
+
+@app.route("/admin/<event>/users/", **crud("get"))
 @api_response
 def event_users(event):
-    return admin.event_users(event)
+    return user_list_resolver.resolve_for(event)
 
 
-@app.route("/admin/accounts/<user>/disqualify/", **POST_REQUEST)
+@app.route("/admin/accounts/<user>/disqualify/", **crud("patch"))
 @api_response
 def disqualify(user):
-    return admin.disqualify(ParsedRequest(), user)
+    return disqualification_resolver.resolve_for(user)
 
 
-@app.route("/admin/accounts/<user>/requalify/", strict_slashes=False)
+@app.route("/admin/accounts/<user>/requalify/", **crud("patch"))
 @api_response
 def requalify(user):
-    return admin.requalify(user)
+    return requalification_resolver.resolve_for(user)
 
 
-@app.route("/admin/accounts/<user>/delete/", strict_slashes=False)
-@api_response
-def delete(user):
-    return admin.delete(user)
-
-
-@app.route("/admin/<event>/questions/add/", **POST_REQUEST)
+@app.route("/admin/<event>/questions/add/", **crud("post"))
 @api_response
 def add_question(event):
-    return admin.add_question(ParsedRequest(), event)
+    return add_question_resolver.resolve_for(event)
 
 
-@app.route("/admin/<event>/questions/<int:number>/edit", **POST_REQUEST)
+@app.route("/admin/<event>/questions/<int:number>/", **crud("patch"))
 @api_response
 def edit_questions(event, number):
-    return admin.edit_question(ParsedRequest(), event, number)
+    return edit_question_resolver.resolve_for(event, number)
 
 
-@app.route("/admin/events/<event>/questions/", strict_slashes=False)
+@app.route("/admin/events/<event>/questions/", **crud("get"))
 @api_response
 def list_questions(event):
-    return admin.list_questions(event)
+    return question_list_resolver.resolve_for(event)
 
 
-@app.route("/admin/events/<event>/edit/", **POST_REQUEST)
-@api_response
-def edit_event(event):
-    return admin.edit_event(ParsedRequest(), event)
-
-
-@app.route("/admin/events/", strict_slashes=False)
+@app.route("/admin/events/", **crud("get"))
 @api_response
 def list_events():
-    return admin.list_events()
+    return event_list_resolver.resolve_for()
 
 
-@app.route("/admin/notificaton-key/", strict_slashes=False)
+@app.route("/admin/events/<event>/", **crud("patch"))
+@api_response
+def edit_event(event):
+    return event_edit_resolver.resolve_for(event)
+
+
+@app.route("/admin/notificaton-key/", **crud("get"))
 @api_response
 def notification_key():
-    return admin.notification_key()
+    return notification_key_resolver.resolve_for()
 
 
-@app.route("/admin/yek-revresgol/", strict_slashes=False)
+@app.route("/admin/yek-revresgol/", **crud("get"))
 @api_response
 def logserver_key():
-    return admin.logserver_key()
+    return logserver_key_resolver.resolve_for()
 
 
-@app.route("/admin/<event>/user-count/", strict_slashes=False)
+@app.route("/admin/<event>/user-count/", **crud("get"))
 @api_response
 def user_count(event):
-    return admin.user_count(event)
+    return user_count_resolver.resolve_for()
