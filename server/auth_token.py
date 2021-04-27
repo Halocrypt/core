@@ -100,6 +100,6 @@ def get_token(strict=True):
         return None
 
     if access is None:
-            raise AppException("refresh", HTTPStatus.OK)
+        raise AppException("refresh", HTTPStatus.OK)
 
     return access

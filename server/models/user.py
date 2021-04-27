@@ -51,8 +51,15 @@ class User(db.Model):
             },
         }
 
+    @validates("name")
+    def _validate_name(self, _, name: str):
+        name = (name or "").strip()
+        if not name:
+            raise AppException("name cannot be blank")
+        return name
+
     @validates("user")
-    def _validate_user(self, key, user: str):
+    def _validate_user(self, _, user: str):
         if not user:
             raise AppException(
                 "Username cannot be blank", HTTPStatus.UNPROCESSABLE_ENTITY
@@ -77,21 +84,21 @@ class User(db.Model):
         return user
 
     @validates("password_hash")
-    def _validate_password(self, key, password: str):
+    def _validate_password(self, _, password: str):
         length = len(password)
         if length < 4:
             raise AppException("Password cannot be shorter than 4 characters")
         return generate_password_hash(password)
 
     @validates("email")
-    def _validate_email(self, key, email: str):
+    def _validate_email(self, _, email: str):
         email = email.strip() if email else None
         if not email:
             raise AppException("Email cannot be blank")
         return validate_email_address(email)
 
     @validates("event")
-    def _validate_event(self, key, event: str):
+    def _validate_event(self, _, event: str):
         if event not in EVENT_NAMES:
             raise AppException("Invalid event")
         return event
