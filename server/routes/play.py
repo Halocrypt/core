@@ -5,6 +5,7 @@ from server.resolvers import play
 leaderboard_resolver = play.LeaderboardResolver()
 question_resolver = play.QuestionResolver()
 answer_resolver = play.AnswerResolver()
+event_list_resolver = play.EventListResolver()
 
 
 @app.route("/play/<event>/leaderboard/", **crud("get"))
@@ -23,3 +24,9 @@ def question(event):
 @api_response
 def answer(event):
     return answer_resolver.resolve_for(event)
+
+
+@app.route("/play/events/", **crud("get"))
+@api_response
+def list_events():
+    return event_list_resolver.resolve_for()

@@ -9,7 +9,6 @@ requalification_resolver = admin.RequalificationResolver()
 add_question_resolver = admin.AddQuestionResolver()
 edit_question_resolver = admin.EditQuestionResolver()
 question_list_resolver = admin.QuestionListResolver()
-event_list_resolver = admin.EventListResolver()
 event_edit_resolver = admin.EventEditResolver()
 notification_key_resolver = admin.NotificationKeyResolver()
 logserver_key_resolver = admin.LogserverKeyResolver()
@@ -50,12 +49,6 @@ def edit_questions(event, number):
 @api_response
 def list_questions(event):
     return question_list_resolver.resolve_for(event)
-
-
-@app.route("/admin/events/", **crud("get"))
-@api_response
-def list_events():
-    return event_list_resolver.resolve_for()
 
 
 @app.route("/admin/events/<event>/", **crud("patch"))

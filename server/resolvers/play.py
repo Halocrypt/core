@@ -16,3 +16,8 @@ class QuestionResolver(BaseResolver):
 class AnswerResolver(BaseResolver):
     def post(self, event):
         return play.answer(ParsedRequest(), event)
+
+
+class EventListResolver(BaseResolver):
+    def get(self):
+        return play.list_events()

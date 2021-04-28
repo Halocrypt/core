@@ -129,15 +129,9 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
     ev.is_over = is_over
 
     invalidate(f"{event}-event-details")
-    invalidate("admin-events-list")
+    invalidate("events-list")
     save_to_db()
     return {"success": True}
-
-
-@require_jwt(admin_mode=True)
-@cache("admin-events-list")
-def list_events(creds=CredManager):
-    return get_events_list()
 
 
 @require_jwt(admin_mode=True)

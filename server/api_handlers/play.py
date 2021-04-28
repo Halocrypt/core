@@ -8,6 +8,7 @@ import requests
 from server.api_handlers.common import (
     clean_secure,
     get_event_details,
+    get_events_list,
     get_question,
     get_user_by_id,
     save_to_db,
@@ -97,3 +98,8 @@ def log_answer(user, question, answer, is_correct):
         headers={"x-logserver-key": LOGSERVER_KEY},
         json=[user, question, answer, is_correct, js_time()],
     )
+
+
+@cache("events-list")
+def list_events():
+    return get_events_list()

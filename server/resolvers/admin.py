@@ -38,11 +38,6 @@ class EventEditResolver(BaseResolver):
         return admin.edit_event(ParsedRequest(), event)
 
 
-class EventListResolver(BaseResolver):
-    def get(self):
-        return admin.list_events()
-
-
 class NotificationKeyResolver(BaseResolver):
     def get(self):
         return admin.notification_key()
