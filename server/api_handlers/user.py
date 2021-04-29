@@ -1,18 +1,15 @@
 from http import HTTPStatus
 from re import IGNORECASE
 from re import compile as _compile
+from urllib.parse import urlencode
+
+# pylint: disable=no-name-in-module
+from psycopg2.errors import UniqueViolation
+from server.api_handlers.email import send_email
 from server.api_handlers.templates import (
     EMAIL_CONFIRMATION_TEMPLATE,
     PASSWORD_RESET_TEMPLATE,
 )
-
-
-from server.api_handlers.email import send_email
-from server.constants import EVENT_NAMES
-
-# pylint: disable=no-name-in-module
-from psycopg2.errors import UniqueViolation
-from server.models import User
 from server.auth_token import (
     issue_access_token,
     issue_email_confirmation_token,
@@ -21,6 +18,7 @@ from server.auth_token import (
     regenerate_access_token,
     require_jwt,
 )
+from server.constants import EVENT_NAMES
 from server.danger import (
     EMAIL_CONF_TOKEN,
     RESET_PASSWORD_TOKEN,
@@ -28,17 +26,19 @@ from server.danger import (
     create_token,
     decode_token,
 )
-from server.util import AppException, ParsedRequest, get_bearer_token
+from server.models import User
+from server.util import AppException
+from server.util import ParsedRequest
 from server.util import ParsedRequest as _Parsed
-from server.util import json_response
+from server.util import get_bearer_token, json_response
 
 from .common import (
     add_to_db,
     clean_secure,
     get_user_by_id,
     save_to_db,
-    send_admin_action_webhook,
     send_acount_creation_webhook,
+    send_admin_action_webhook,
 )
 from .cred_manager import CredManager
 
@@ -132,10 +132,12 @@ def login(request: _Parsed):
 def send_verification_email(req: ParsedRequest, creds: CredManager = CredManager):
     handler = get_subdomain(req.json.get("handler"))
     user = creds.user
+    user_data = get_user_by_id(user)
     token = create_token(issue_email_confirmation_token(user))
-    url = f"{handler}.halocrypt.com/-/confirm-email?token={token}"
+    qs = urlencode({"token": token, "user": user})
+    url = f"https://{handler}.halocrypt.com/-/confirm-email?{qs}"
     send_email(
-        user.email,
+        user_data.email,
         "Confirm Email",
         EMAIL_CONFIRMATION_TEMPLATE.format(url=url),
         f"Confirm your email here {url}",
@@ -162,7 +164,8 @@ def send_password_reset_email(req: _Parsed, user):
     handler = get_subdomain(req.json.get("handler"))
 
     token = create_token(issue_password_reset_token(user))
-    url = f"{handler}.halocrypt.com/-/reset-password?token={token}"
+    qs = urlencode({"token": token, "user": user})
+    url = f"https://{handler}.halocrypt.com/-/reset-password?{qs}"
 
     user_data = get_user_by_id(user)
     if not user:

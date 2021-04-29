@@ -14,7 +14,7 @@ EMAIL_CONFIRMATION_TEMPLATE = """<!DOCTYPE html>
       </tr>
       <tr>
         <td style="border: 10px solid transparent">
-          <a href="{url}">confirm your email address</a>
+          <a href="{url}">Click here to confirm your email address</a>
         </td>
       </tr>
       <tr>

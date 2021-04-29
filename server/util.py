@@ -28,9 +28,6 @@ def validate_email_address(email_id: str) -> str:
 def get_origin(headers: Headers, or_="*") -> str:
     """
     for CORS requests
-    On client we will send the x-qbytic-origin header
-    or a query string to specify the origin
-
     Args:
         request (_Request): Flask request object
 
@@ -47,6 +44,7 @@ class ParsedRequest:
         self.headers = _request.headers
         self.json: dict = _request.get_json() or {}
         self.method = _request.method
+        self.origin = get_origin(_request.headers)
 
 
 def json_response(data: dict, status=200, headers=None) -> _Response:
