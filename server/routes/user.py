@@ -53,4 +53,4 @@ def send_verification_email():
 @app.route("/accounts/<user_name>/password/new/", **crud("post", "patch"))
 @api_response
 def send_password_reset_email(user_name):
-    return paassword_reset_resolver.resolve_for()
+    return paassword_reset_resolver.resolve_for(user_name)
