@@ -25,6 +25,7 @@ from server.safe_io import (
     safe_remove,
 )
 from server.constants import CACHE_DIR, DISABLE_CACHING
+from gc import collect
 
 DEFAULT_CACHE_TIMEOUT = 60 * 60
 DATA_SUFFIX = ".cache.json"
@@ -122,6 +123,7 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
             print("Cache miss:", key)
             result = func(*args, **kwargs)
             cache_data(key, result)
+            collect()
             return result
 
         return flask_cache
