@@ -123,7 +123,7 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
             print("Cache miss:", key)
             result = func(*args, **kwargs)
             cache_data(key, result)
-            collect()
+            print("gc:", collect())
             return result
 
         return flask_cache
