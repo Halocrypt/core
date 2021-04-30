@@ -6,13 +6,15 @@
 #   or requesting a new access_token to be done elsewhere )
 # ==============================================================
 
+from gc import collect
 from http import HTTPStatus
 from time import time as _time
 
 import jwt as _jwt
 import passlib.hash as _pwhash
+
+from .constants import SIGNING_KEY as _SIGNING_KEY
 from .constants import (
-    SIGNING_KEY as _SIGNING_KEY,
     TOKEN_EXPIRATION_TIME_IN_SECONDS as _TOKEN_EXPIRATION_TIME_IN_SECONDS,
 )
 from .util import AppException
@@ -24,7 +26,7 @@ if _SIGNING_KEY is None:
 if _TOKEN_EXPIRATION_TIME_IN_SECONDS is None:
     raise Exception("Specify token expiration time..")
 
-_hash_method = _pwhash.scrypt  # or argon2? needs external dependency
+_hash_method = _pwhash.argon2.using(memory_cost=10 * 1024)
 
 _encode_token = _jwt.encode
 _decode_token = _jwt.decode
@@ -32,11 +34,15 @@ _decode_token = _jwt.decode
 # =======================================================================
 #                       Password Hashing
 def check_password_hash(_hash: str, pw: str) -> bool:
-    return _hash_method.verify(pw, _hash)
+    val = _hash_method.verify(pw, _hash)
+    collect()
+    return val
 
 
 def generate_password_hash(pw):
-    return _hash_method.hash(pw)
+    val = _hash_method.hash(pw)
+    collect()
+    return val
 
 
 # =======================================================================
