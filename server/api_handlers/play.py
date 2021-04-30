@@ -70,11 +70,11 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
         except AppException:
             return {"game_over": True}
         is_correct = sanitize(q["_secure_"]["answer"]) == answer
+        log_answer(user.user, q["question_number"], js["answer"], is_correct)
         if is_correct:
             user.level += 1
             user.points += q["question_points"]
             user.last_question_answered_at = time()
-            log_answer(user.user, q["question_number"], js["answer"], is_correct)
             save_to_db()
         return {"is_correct": is_correct}
 
