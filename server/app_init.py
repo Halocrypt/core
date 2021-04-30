@@ -1,7 +1,7 @@
 from flask import Flask, request
 
 from floodgate import guard
-from .constants import DATABASE_URL, FLASK_SECRET, IS_PROD
+from .constants import DATABASE_URL, FG_PER, FG_REQUEST_COUNT, FLASK_SECRET, IS_PROD
 
 from .util import (
     get_origin,
@@ -30,7 +30,12 @@ def resolver(req):
 
 
 @app.before_request
-@guard(ban_time=5, ip_resolver=resolver if IS_PROD else None, request_count=50, per=15)
+@guard(
+    ban_time=5,
+    ip_resolver=resolver if IS_PROD else None,
+    request_count=FG_REQUEST_COUNT,
+    per=FG_PER,
+)
 def gate_check():
     pass
 

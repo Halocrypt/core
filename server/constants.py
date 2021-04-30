@@ -26,7 +26,10 @@ NOTIFICATION_KEY = _environ["NOTIFICATION_KEY"]
 REMOTE_LOG_DB_KEY = _environ["REMOTE_LOG_DB_KEY"]
 LOGSERVER_KEY = _environ["LOGSERVER_KEY"]
 DISABLE_CACHING = _environ.get("DISABLE_CACHING")
+FG_REQUEST_COUNT = _environ.get("FG_REQUEST_COUNT", 20)
+FG_PER = _environ.get("FG_PER", 10)
 CACHE_DIR = str(Path(path.dirname(path.realpath(__file__)), "@cache").resolve())
+
 
 EVENT_NAMES = ("intra", "main", "dev")
 
