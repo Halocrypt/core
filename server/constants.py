@@ -25,6 +25,7 @@ MAIL_PASS = _environ["MAIL_PASS"]
 NOTIFICATION_KEY = _environ["NOTIFICATION_KEY"]
 REMOTE_LOG_DB_KEY = _environ["REMOTE_LOG_DB_KEY"]
 LOGSERVER_KEY = _environ["LOGSERVER_KEY"]
+DISABLE_CACHING = _environ.get("DISABLE_CACHING")
 CACHE_DIR = str(Path(path.dirname(path.realpath(__file__)), "@cache").resolve())
 
 EVENT_NAMES = ("intra", "main", "dev")

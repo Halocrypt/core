@@ -14,7 +14,7 @@ from os import stat
 from pathlib import Path
 from time import time
 
-from flask import make_response, send_from_directory
+from flask import make_response
 from flask.helpers import send_file
 
 from server.safe_io import (
@@ -24,7 +24,7 @@ from server.safe_io import (
     safe_mkdir,
     safe_remove,
 )
-from server.constants import CACHE_DIR
+from server.constants import CACHE_DIR, DISABLE_CACHING
 
 DEFAULT_CACHE_TIMEOUT = 60 * 60
 DATA_SUFFIX = ".cache.json"
@@ -101,6 +101,8 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
     def decorator(func):
         @wraps(func)
         def flask_cache(*args, **kwargs):
+            if DISABLE_CACHING:
+                return func(*args, **kwargs)
             key = (
                 key_method
                 if isinstance(key_method, str)
