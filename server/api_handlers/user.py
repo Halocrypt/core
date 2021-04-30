@@ -163,11 +163,13 @@ def confirm_email(req: _Parsed):
 def send_password_reset_email(req: _Parsed, user):
     handler = get_subdomain(req.json.get("handler"))
 
-    token = create_token(issue_password_reset_token(user))
+    user_data = get_user_by_id(user)
+    token = create_token(
+        issue_password_reset_token(user_data.user, user_data.password_hash)
+    )
     qs = urlencode({"token": token, "user": user})
     url = f"https://{handler}.halocrypt.com/-/reset-password?{qs}"
 
-    user_data = get_user_by_id(user)
     if not user:
         raise AppException("Invalid request")
     send_email(
@@ -195,8 +197,11 @@ def verify_password_reset(req: _Parsed, user_name):
     if data["token_type"] == RESET_PASSWORD_TOKEN:
         user = data["user"]
         if user != user_name:
-            raise AppException("?")
+            raise AppException("Lol")
         u = get_user_by_id(user)
+        state = data["state"]
+        if not check_password_hash(state, f"{u.user}{u.password_hash}"):
+            raise AppException("Token expired", HTTPStatus.UNAUTHORIZED)
         u.password_hash = new_password
         save_to_db()
         return {"success": True}

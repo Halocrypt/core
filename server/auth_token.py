@@ -60,10 +60,11 @@ def issue_email_confirmation_token(user: str):
     return {"token_type": EMAIL_CONF_TOKEN, "user": user, "exp": time() + THREE_HOURS}
 
 
-def issue_password_reset_token(user: str):
+def issue_password_reset_token(user, phash):
     return {
         "token_type": RESET_PASSWORD_TOKEN,
         "user": user,
+        "state": generate_password_hash(f"{user}{phash}"),
         "exp": time() + THREE_HOURS,
     }
 

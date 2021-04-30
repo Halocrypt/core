@@ -3,7 +3,6 @@ from server.api_handlers.common import (
     add_to_db,
     delete_from_db,
     get_event_by_id,
-    get_events_list,
     get_next_q_level,
     get_question_by_id,
     get_question_list,

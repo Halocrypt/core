@@ -2,7 +2,6 @@ from server.resolvers import admin
 from server.app_init import app
 from server.util import api_response, crud
 
-
 user_list_resolver = admin.UserListResolver()
 disqualification_resolver = admin.DisqualificationResolver()
 requalification_resolver = admin.RequalificationResolver()
@@ -17,7 +16,7 @@ user_count_resolver = admin.UserCountResolver()
 
 @app.route("/admin/<event>/users/", **crud("get"))
 @api_response
-def event_users(event):
+def user_list(event):
     return user_list_resolver.resolve_for(event)
 
 

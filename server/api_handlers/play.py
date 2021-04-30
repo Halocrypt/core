@@ -6,7 +6,6 @@ from time import time
 import requests
 
 from server.api_handlers.common import (
-    clean_secure,
     get_event_details,
     get_events_list,
     get_question,
@@ -15,9 +14,12 @@ from server.api_handlers.common import (
 )
 from server.api_handlers.cred_manager import CredManager
 from server.auth_token import require_jwt
-from server.util import js_time, sanitize
+from server.util import js_time, only_keys, sanitize
 from server.models.user import User
 from server.util import AppException, ParsedRequest
+
+
+leaderboard_keys = ("user", "name", "points", "level", "is_admin")
 
 
 @cache(lambda x: f"{x}-leaderboard", 30)
@@ -30,12 +32,12 @@ def leaderboard(x):
         User.last_question_answered_at.asc(),
     ).filter_by(event=x)
 
-    return [clean_secure(x) for x in users.all()]
+    return [only_keys(x.as_json, *leaderboard_keys) for x in users.all()]
 
 
 @require_jwt()
 def question(event, creds: CredManager = CredManager):
-    is_hunt_running(event)
+    assert_hunt_running(event)
     user = get_user_by_id(creds.user)
     if user.is_disqualified:
         return {"disqualified": True, "reason": user.disqualification_reason}
@@ -52,7 +54,7 @@ def question(event, creds: CredManager = CredManager):
 
 @require_jwt()
 def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
-    is_hunt_running(event)
+    assert_hunt_running(event)
     js = req.json
     answer = sanitize(js.get("answer", ""))
     # don't even bother if the user is trying an absurdly large answer
@@ -81,7 +83,7 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
         raise Exception("An unknown error occured")
 
 
-def is_hunt_running(event):
+def assert_hunt_running(event):
     ev = get_event_details(event)
     curr_time = time()
     has_not_started = ev["event_start_time"] > curr_time
