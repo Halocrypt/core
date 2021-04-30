@@ -25,12 +25,14 @@ MAIL_PASS = _environ["MAIL_PASS"]
 NOTIFICATION_KEY = _environ["NOTIFICATION_KEY"]
 REMOTE_LOG_DB_KEY = _environ["REMOTE_LOG_DB_KEY"]
 LOGSERVER_KEY = _environ["LOGSERVER_KEY"]
-DISABLE_CACHING = _environ.get("DISABLE_CACHING")
-FG_REQUEST_COUNT = int(_environ.get("FG_REQUEST_COUNT", 20))
-FG_PER = int(_environ.get("FG_PER", 10))
+DISABLE_CACHING = _environ.get(
+    "DISABLE_CACHING"
+)  # dont change unless you know what you're doing
+
+FG_REQUEST_COUNT = int(_environ.get("FG_REQUEST_COUNT", 6))
+FG_PER = int(_environ.get("FG_PER", 2))
+MIN_QUESTION_TO_LOG = int(_environ.get("MIN_QUESTION_TO_LOG", 5))
 CACHE_DIR = str(Path(path.dirname(path.realpath(__file__)), "@cache").resolve())
-
-
 EVENT_NAMES = ("intra", "main", "dev")
 
 del path

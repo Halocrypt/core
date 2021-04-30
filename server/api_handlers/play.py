@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from server.constants import LOGSERVER_KEY
+from server.constants import LOGSERVER_KEY, MIN_QUESTION_TO_LOG
 from server.response_caching import cache
 from time import time
 
@@ -58,6 +58,7 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
     js = req.json
     answer = sanitize(js.get("answer", ""))
     # don't even bother if the user is trying an absurdly large answer
+    print(answer)
     if len(answer) > 50 or not answer:
         return {"is_correct": False}
 
@@ -95,11 +96,12 @@ def assert_hunt_running(event):
 
 
 def log_answer(user, question, answer, is_correct):
-    requests.post(
-        "http://localhost:5001/log/cf",
-        headers={"x-logserver-key": LOGSERVER_KEY},
-        json=[user, question, answer, is_correct, js_time()],
-    )
+    if question >= MIN_QUESTION_TO_LOG:
+        requests.post(
+            "http://localhost:5001/log/cf",
+            headers={"x-logserver-key": LOGSERVER_KEY},
+            json=[user, question, answer, is_correct, js_time()],
+        )
 
 
 @cache("events-list")
