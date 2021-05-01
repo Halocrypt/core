@@ -19,7 +19,7 @@ from server.models.user import User
 from server.util import AppException, ParsedRequest
 
 
-leaderboard_keys = ("user", "name", "points", "level", "is_admin")
+leaderboard_keys = ("user", "name", "points", "level", "is_admin", "is_disqualified")
 
 
 @cache(lambda x: f"{x}-leaderboard", 30)

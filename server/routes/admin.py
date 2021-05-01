@@ -71,4 +71,4 @@ def logserver_key():
 @app.route("/admin/<event>/user-count/", **crud("get"))
 @api_response
 def user_count(event):
-    return user_count_resolver.resolve_for()
+    return user_count_resolver.resolve_for(event)
