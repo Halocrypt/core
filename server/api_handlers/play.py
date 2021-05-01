@@ -58,10 +58,8 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
     js = req.json
     answer = sanitize(js.get("answer", ""))
     # don't even bother if the user is trying an absurdly large answer
-    print(answer)
     if len(answer) > 50 or not answer:
         return {"is_correct": False}
-
     user = get_user_by_id(creds.user)
     if user.is_disqualified:
         return {"disqualified": True, "reason": user.disqualification_reason}
