@@ -21,3 +21,8 @@ class AnswerResolver(BaseResolver):
 class EventListResolver(BaseResolver):
     def get(self):
         return play.list_events()
+
+
+class GetNotificationResolver(BaseResolver):
+    def get(self, event):
+        return play.get_notifications(event)

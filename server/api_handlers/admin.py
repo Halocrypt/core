@@ -1,3 +1,4 @@
+from sqlalchemy.orm.attributes import flag_modified
 import requests
 from server.api_handlers.common import (
     add_to_db,
@@ -14,10 +15,10 @@ from server.api_handlers.common import (
 )
 from server.api_handlers.cred_manager import CredManager
 from server.auth_token import require_jwt
-from server.constants import LOGSERVER_KEY, NOTIFICATION_KEY, REMOTE_LOG_DB_KEY
+from server.constants import LOGSERVER_KEY, REMOTE_LOG_DB_KEY
 from server.models.question import Question
 from server.response_caching import cache, invalidate
-from server.util import AppException, ParsedRequest
+from server.util import AppException, ParsedRequest, js_time
 
 
 @require_jwt(admin_mode=True)
@@ -134,8 +135,28 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
 
 
 @require_jwt(admin_mode=True)
-def notification_key(creds=CredManager):
-    return NOTIFICATION_KEY
+def add_notification(req: ParsedRequest, event_name: str, creds=CredManager):
+    event = get_event_by_id(event_name)
+    notifs = event.notifications
+    notifs.append({**req.json, "ts": js_time()})
+    notifs.sort(key=lambda x: x["ts"], reverse=True)
+    event.notifications = notifs
+    flag_modified(event,"notifications")
+    save_to_db()
+    invalidate(f"{event_name}-notifications")
+    return {"success": True}
+
+
+@require_jwt(admin_mode=True)
+def delete_notification(event_name: str, ts, creds=CredManager):
+    event = get_event_by_id(event_name)
+    notifs = event.notifications
+    n = [x for x in notifs if x["ts"] != ts]
+    n.sort(key=lambda x: x["ts"], reverse=True)
+    event.notifications = n
+    save_to_db()
+    invalidate(f"{event_name}-notifications")
+    return {"success": True}
 
 
 @require_jwt(admin_mode=True)

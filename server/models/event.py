@@ -1,4 +1,5 @@
 from .shared import db, raise_if_invalid_data
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 
 class Event(db.Model):
@@ -6,6 +7,7 @@ class Event(db.Model):
     name = db.Column(db.String(20), primary_key=True)
     event_start_time = db.Column(db.Integer)
     event_end_time = db.Column(db.Integer)
+    notifications: list = db.Column(ARRAY(JSONB))
     # kill switch
     is_over = db.Column(db.Boolean)
 
@@ -21,6 +23,7 @@ class Event(db.Model):
         self.event_start_time = event_start_time
         self.event_end_time = event_end_time
         self.is_over = is_over
+        self.notifications = []
 
     @property
     def as_json(self):

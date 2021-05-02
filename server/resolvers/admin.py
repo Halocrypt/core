@@ -38,9 +38,14 @@ class EventEditResolver(BaseResolver):
         return admin.edit_event(ParsedRequest(), event)
 
 
-class NotificationKeyResolver(BaseResolver):
-    def get(self):
-        return admin.notification_key()
+class NotificationResolver(BaseResolver):
+    def patch(self, event):
+        return admin.add_notification(ParsedRequest(), event)
+
+
+class NotificationDeleteResolver(BaseResolver):
+    def delete(self, event, ts):
+        return admin.delete_notification(event, ts)
 
 
 class LogserverKeyResolver(BaseResolver):

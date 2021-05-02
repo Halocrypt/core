@@ -9,7 +9,8 @@ add_question_resolver = admin.AddQuestionResolver()
 edit_question_resolver = admin.EditQuestionResolver()
 question_list_resolver = admin.QuestionListResolver()
 event_edit_resolver = admin.EventEditResolver()
-notification_key_resolver = admin.NotificationKeyResolver()
+notification_resolver = admin.NotificationResolver()
+notification_delete_resolver = admin.NotificationDeleteResolver()
 logserver_key_resolver = admin.LogserverKeyResolver()
 user_count_resolver = admin.UserCountResolver()
 
@@ -56,16 +57,22 @@ def edit_event(event):
     return event_edit_resolver.resolve_for(event)
 
 
-@app.route("/admin/notificaton-key/", **crud("get"))
-@api_response
-def notification_key():
-    return notification_key_resolver.resolve_for()
-
-
 @app.route("/admin/yek-revresgol/", **crud("get"))
 @api_response
 def logserver_key():
     return logserver_key_resolver.resolve_for()
+
+
+@app.route("/admin/<event>/notifications/<int:ts>/", **crud("delete"))
+@api_response
+def delete_notification(event, ts):
+    return notification_delete_resolver.resolve_for(event, ts)
+
+
+@app.route("/admin/<event>/notifications/", **crud("patch", "delete"))
+@api_response
+def notifications(event):
+    return notification_resolver.resolve_for(event)
 
 
 @app.route("/admin/<event>/user-count/", **crud("get"))

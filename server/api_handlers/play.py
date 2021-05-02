@@ -6,6 +6,7 @@ from time import time
 import requests
 
 from server.api_handlers.common import (
+    get_event_by_id,
     get_event_details,
     get_events_list,
     get_question,
@@ -104,6 +105,11 @@ def log_answer(user, question, answer, is_correct):
             headers={"x-logserver-key": LOGSERVER_KEY},
             json=[user, question, answer, is_correct, js_time()],
         )
+
+
+@cache(lambda x: f"{x}-notifications")
+def get_notifications(x):
+    return get_event_by_id(x).notifications
 
 
 @cache("events-list")

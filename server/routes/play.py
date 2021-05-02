@@ -6,6 +6,7 @@ leaderboard_resolver = play.LeaderboardResolver()
 question_resolver = play.QuestionResolver()
 answer_resolver = play.AnswerResolver()
 event_list_resolver = play.EventListResolver()
+get_notification_resolver = play.GetNotificationResolver()
 
 
 @app.route("/play/<event>/leaderboard/", **crud("get"))
@@ -24,6 +25,12 @@ def question(event):
 @api_response
 def answer(event):
     return answer_resolver.resolve_for(event)
+
+
+@app.route("/play/<event>/notifications/", **crud("get"))
+@api_response
+def get_notifications(event):
+    return get_notification_resolver.resolve_for(event)
 
 
 @app.route("/play/events/", **crud("get"))
