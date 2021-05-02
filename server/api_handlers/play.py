@@ -39,6 +39,8 @@ def leaderboard(x):
 def question(event, creds: CredManager = CredManager):
     assert_hunt_running(event)
     user = get_user_by_id(creds.user)
+    if user.event != event:
+        raise AppException("Not your event..")
     if user.is_disqualified:
         return {"disqualified": True, "reason": user.disqualification_reason}
     try:
@@ -61,6 +63,8 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
     if len(answer) > 50 or not answer:
         return {"is_correct": False}
     user = get_user_by_id(creds.user)
+    if user.event != event:
+        raise AppException("Not your event..")
     if user.is_disqualified:
         return {"disqualified": True, "reason": user.disqualification_reason}
     try:
