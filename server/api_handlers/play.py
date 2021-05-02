@@ -107,7 +107,7 @@ def log_answer(user, question, answer, is_correct):
         )
 
 
-@cache(lambda x: f"{x}-notifications")
+@cache(lambda x: f"{x}-notifications", timeout=5 * 60 * 60)
 def get_notifications(x):
     return get_event_by_id(x).notifications
 
