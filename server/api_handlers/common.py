@@ -127,7 +127,7 @@ def send_password_reset_webhook(user):
 
 def send_admin_action_webhook(text):
     send_webhook(
-        BACKEND_WEBHOOK_URL, get_webhook_json("Admin Action"), "\n".join(text), 0xFF0000
+        BACKEND_WEBHOOK_URL, get_webhook_json("Admin Action", "\n".join(text), 0xFF0000)
     )
 
 
