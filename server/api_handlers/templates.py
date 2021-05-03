@@ -1,59 +1,9 @@
-EMAIL_CONFIRMATION_TEMPLATE = """<!DOCTYPE html>
-<html>
-  <body
-    style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    "
-  >
-    <table style="border-collapse: collapse; border-spacing: 0">
-      <tr>
-        <td style="border: 10px solid transparent">
-          Hey, did you request an email confirmation?
-        </td>
-      </tr>
-      <tr>
-        <td style="border: 10px solid transparent">
-          <a href="{url}">Click here to confirm your email address</a>
-        </td>
-      </tr>
-      <tr>
-        <td style="border: 10px solid transparent">Team Halocrypt</td>
-      </tr>
-    </table>
-  </body>
-</html>
-"""
+from pathlib import Path
+from os import path
 
+EMAIL_TEMPLATE = Path(
+    path.dirname(path.realpath(__file__)), "email_template.txt"
+).read_text()
 
-PASSWORD_RESET_TEMPLATE = """<!DOCTYPE html>
-<html>
-  <body
-    style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    "
-  >
-    <table style="border-collapse: collapse; border-spacing: 0">
-      <tr>
-        <td style="border: 10px solid transparent">
-          Our records indicate that you requested a password reset
-        </td>
-      </tr>
-      <tr>
-        <td style="border: 10px solid transparent">
-          <a href="{url}">Click here to set a new password</a>
-        </td>
-      </tr>
-      <tr>
-        <td style="border: 10px solid transparent">
-          If that wasn't you, feel free to ignore this email
-        </td>
-      </tr>
-      <tr>
-        <td style="border: 10px solid transparent">Team Halocrypt</td>
-      </tr>
-    </table>
-  </body>
-</html>
-"""
+del Path
+del path

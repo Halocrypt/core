@@ -6,10 +6,7 @@ from urllib.parse import urlencode
 # pylint: disable=no-name-in-module
 from psycopg2.errors import UniqueViolation
 from server.api_handlers.email import send_email
-from server.api_handlers.templates import (
-    EMAIL_CONFIRMATION_TEMPLATE,
-    PASSWORD_RESET_TEMPLATE,
-)
+from server.api_handlers.templates import EMAIL_TEMPLATE
 from server.auth_token import (
     issue_access_token,
     issue_email_confirmation_token,
@@ -39,6 +36,8 @@ from .common import (
     save_to_db,
     send_acount_creation_webhook,
     send_admin_action_webhook,
+    send_email_verify_webhook,
+    send_password_reset_webhook,
 )
 from .cred_manager import CredManager
 
@@ -129,7 +128,9 @@ def send_verification_email(req: ParsedRequest, creds: CredManager = CredManager
     send_email(
         user_data.email,
         "Confirm Email",
-        EMAIL_CONFIRMATION_TEMPLATE.format(url=url),
+        EMAIL_TEMPLATE.replace(r"{url}", url)
+        .replace(r"{message}", "Click the button below to verify your email")
+        .replace(r"{action}", "Verify Email"),
         f"Confirm your email here {url}",
     )
     return {"success": True}
@@ -145,6 +146,7 @@ def confirm_email(req: _Parsed):
         u = get_user_by_id(user)
         u.has_verified_email = True
         save_to_db()
+        send_email_verify_webhook(user)
         return {"success": True}
 
     raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)
@@ -165,7 +167,12 @@ def send_password_reset_email(req: _Parsed, user):
     send_email(
         user_data.email,
         "Reset password",
-        PASSWORD_RESET_TEMPLATE.format(url=url),
+        EMAIL_TEMPLATE.replace(r"{url}", url)
+        .replace(
+            r"{message}",
+            "Our records indicate that you have requested a password reset. You can do so by clicking the button below",
+        )
+        .replace(r"{action}", "Reset Password"),
         f"Reset your password here: {url}",
     )
     return {"success": True}
@@ -194,6 +201,7 @@ def verify_password_reset(req: _Parsed, user_name):
             raise AppException("Token expired", HTTPStatus.UNAUTHORIZED)
         u.password_hash = new_password
         save_to_db()
+        send_password_reset_webhook(user)
         return {"success": True}
 
     raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)
@@ -275,7 +283,7 @@ def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
         save_to_db()
     except Exception as e:
         check_integrity_error(e)
-        
+
     if creds.is_admin and text:
         send_admin_action_webhook(text)
     return user_data.as_json
