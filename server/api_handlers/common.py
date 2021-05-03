@@ -37,6 +37,7 @@ def delete_from_db(d, batch=False):
 
 
 def get_user_by_id(idx: str) -> _U:
+    idx = idx.lower()
     if not idx or sanitize(idx) != idx:
         return _assert_exists(None)
     return _assert_exists(_U.query.filter(lower(_U.user) == lower(idx)).first())
