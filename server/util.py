@@ -20,6 +20,9 @@ sanitize = lambda x: _sub("", x).strip().lower()
 
 
 def validate_email_address(email_id: str) -> str:
+    if not email_id:
+        raise AppException("Invalid email")
+    email_id = email_id.lower()
     if "@" in _parseaddr(email_id)[1]:
         return email_id
     raise AppException("Invalid Email", HTTPStatus.BAD_REQUEST)
