@@ -14,8 +14,8 @@ from .shared import db, raise_if_invalid_data
 class User(db.Model):
     # pylint: disable=E1101
     _id: str = db.Column(db.String(30), unique=True, nullable=False, primary_key=True)
-    user: str = db.Column(db.String(30), unique=True, nullable=False)
-    name: str = db.Column(db.String(30), nullable=False)
+    user: str = db.Column(db.String(35), unique=True, nullable=False)
+    name: str = db.Column(db.String(100), nullable=False)
     email: str = db.Column(db.String(250), nullable=False, unique=True)
     institution: str = db.Column(db.String(100))
     password_hash: str = db.Column(db.String, nullable=False)
@@ -113,7 +113,7 @@ class User(db.Model):
         event: str = None,
     ):
         raise_if_invalid_data(user, name, password)
-        self._id = token_urlsafe(20)
+        self._id = token_urlsafe(15)
         self.user = user.lower()
         self.name = name
         self.email = email
