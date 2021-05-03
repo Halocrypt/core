@@ -144,6 +144,8 @@ def confirm_email(req: _Parsed):
     if data["token_type"] == EMAIL_CONF_TOKEN:
         user = data["user"]
         u = get_user_by_id(user)
+        if u.has_verified_email:
+            return {"success": True}
         u.has_verified_email = True
         save_to_db()
         send_email_verify_webhook(user)
