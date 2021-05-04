@@ -33,6 +33,7 @@ def init():
 
 
 def push_log(t: str, line: bytes):
+    return send_to_log_server(line)
     file = log_file(t)
     if t == "cf" and file_size(file) / BYTES_IN_1MB >= 1:
         send_file_contents(file)
@@ -41,6 +42,7 @@ def push_log(t: str, line: bytes):
 
 
 def flush_log(t: str):
+    return
     file = log_file(t)
     if t == "cf" and file_size(file):
         send_file_contents(file)
