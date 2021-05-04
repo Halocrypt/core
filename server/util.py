@@ -16,7 +16,7 @@ from werkzeug.datastructures import Headers
 
 # maybe only strip whitespace?
 _sub = _compile(r"([^\w])").sub
-sanitize = lambda x: _sub("", x).strip().lower()
+sanitize = lambda x: _sub("", f"{x}").strip().lower()
 
 
 def validate_email_address(email_id: str) -> str:
