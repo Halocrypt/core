@@ -141,7 +141,7 @@ def add_notification(req: ParsedRequest, event_name: str, creds=CredManager):
     notifs.append({**req.json, "ts": js_time()})
     notifs.sort(key=lambda x: x["ts"], reverse=True)
     event.notifications = notifs
-    flag_modified(event,"notifications")
+    flag_modified(event, "notifications")
     save_to_db()
     invalidate(f"{event_name}-notifications")
     return {"success": True}
