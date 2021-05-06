@@ -25,10 +25,6 @@ def favicon():
     return serve_static_file("favicon.ico")
 
 
-@app.route("/throw")
-def throw():
-    raise Exception("...")
-
 
 if __name__ == "__main__":
     app.run(debug=True)
