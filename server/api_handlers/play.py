@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from server.constants import LOGSERVER_KEY, MIN_QUESTION_TO_LOG
+from server.constants import LOG_SERVER_ENDPOINT, MIN_QUESTION_TO_LOG, REMOTE_LOG_DB_KEY
 from server.response_caching import cache
 from time import time
 
@@ -101,8 +101,8 @@ def assert_hunt_running(event):
 def log_answer(user, question, answer, is_correct):
     if question >= MIN_QUESTION_TO_LOG:
         requests.post(
-            "http://localhost:5001/log/cf",
-            headers={"x-logserver-key": LOGSERVER_KEY},
+            f"{LOG_SERVER_ENDPOINT}/add",
+            headers={"x-access-key": REMOTE_LOG_DB_KEY},
             json=[user, question, answer, is_correct, js_time()],
         )
 

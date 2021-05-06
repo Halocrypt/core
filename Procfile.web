@@ -1,2 +1,0 @@
-core_server: bin/start-nginx exec gunicorn -c  server/gunicorn.conf.py _core:app
-log_server: gunicorn -c logserver/gunicorn.conf.py _log:app

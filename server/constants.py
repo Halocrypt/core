@@ -24,7 +24,7 @@ MAIL_USER = _environ["MAIL_USER"]
 MAIL_PASS = _environ["MAIL_PASS"]
 
 REMOTE_LOG_DB_KEY = _environ["REMOTE_LOG_DB_KEY"]
-LOGSERVER_KEY = _environ["LOGSERVER_KEY"]
+LOG_SERVER_ENDPOINT = _environ["LOG_SERVER_ENDPOINT"]
 DISABLE_CACHING = _environ.get(
     "DISABLE_CACHING"
 )  # dont change unless you know what you're doing

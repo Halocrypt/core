@@ -1,5 +1,4 @@
 from sqlalchemy.orm.attributes import flag_modified
-import requests
 from server.api_handlers.common import (
     add_to_db,
     delete_from_db,
@@ -15,7 +14,7 @@ from server.api_handlers.common import (
 )
 from server.api_handlers.cred_manager import CredManager
 from server.auth_token import require_jwt
-from server.constants import LOGSERVER_KEY, REMOTE_LOG_DB_KEY
+from server.constants import REMOTE_LOG_DB_KEY
 from server.models.question import Question
 from server.response_caching import cache, invalidate
 from server.util import AppException, ParsedRequest, js_time
@@ -167,8 +166,5 @@ def user_count(event, creds=CredManager):
 
 @require_jwt(admin_mode=True)
 def logserver_key(creds=CredManager):
-    requests.get(
-        "http://localhost:5001/cf/flush",
-        headers={"x-logserver-key": LOGSERVER_KEY},
-    )
+
     return REMOTE_LOG_DB_KEY
