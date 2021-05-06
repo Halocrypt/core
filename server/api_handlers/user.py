@@ -71,8 +71,8 @@ def register(request: _Parsed):
     institution = get("institution")
     password = get("password")
     event = get("event")
-    if event == "intra":
-        raise AppException("Inta is over..see you in the main event")
+    # if event == "intra":
+    #     raise AppException("Inta is over..see you in the main event")
     try:
         user_data = User(
             user=user,

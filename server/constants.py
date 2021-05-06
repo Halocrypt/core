@@ -25,6 +25,7 @@ MAIL_PASS = _environ["MAIL_PASS"]
 
 REMOTE_LOG_DB_KEY = _environ["REMOTE_LOG_DB_KEY"]
 LOG_SERVER_ENDPOINT = _environ["LOG_SERVER_ENDPOINT"]
+BUGSNAG_API_KEY = _environ["BUGSNAG_API_KEY"]
 DISABLE_CACHING = _environ.get(
     "DISABLE_CACHING"
 )  # dont change unless you know what you're doing
