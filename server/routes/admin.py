@@ -82,7 +82,7 @@ def user_count(event):
     return user_count_resolver.resolve_for(event)
 
 
-@app.rout("/admin/-/invalidate/", **crud("post"))
+@app.route("/admin/-/invalidate/", **crud("post"))
 @api_response
 def invalidate_keys():
     return invalidate_resolver.resolve_for()
