@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from server.constants import LOG_SERVER_ENDPOINT, MIN_QUESTION_TO_LOG, REMOTE_LOG_DB_KEY
-from server.response_caching import cache
+from server.response_caching import cache, invalidate
 from time import time
 
 import requests
@@ -23,7 +23,7 @@ from server.util import AppException, ParsedRequest
 leaderboard_keys = ("user", "name", "points", "level", "is_admin", "is_disqualified")
 
 
-@cache(lambda x: f"{x}-leaderboard", 30)
+@cache(lambda x: f"{x}-leaderboard")
 def leaderboard(x):
     users = User.query.order_by(
         User.is_disqualified.asc(),
@@ -80,6 +80,7 @@ def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
             user.points += q["question_points"]
             user.last_question_answered_at = time()
             save_to_db()
+            return invalidate(f"{event}-leaderboard", {"is_correct": is_correct})
         return {"is_correct": is_correct}
 
     except Exception as e:
