@@ -1,9 +1,17 @@
 from flask import Flask, request
 
 from floodgate import guard
-from .constants import DATABASE_URL, FG_PER, FG_REQUEST_COUNT, FLASK_SECRET, IS_PROD
+from .constants import (
+    DATABASE_URL,
+    DEALER_KEY,
+    FG_PER,
+    FG_REQUEST_COUNT,
+    FLASK_SECRET,
+    IS_PROD,
+)
 
 from .util import (
+    AppException,
     get_origin,
     json_response,
 )
@@ -23,7 +31,7 @@ db.init_app(app)
 
 def resolver(req):
     headers = req.headers
-    cf = headers.get("cf-connecting-ip")
+    cf = headers.get("x-real-ip") or headers.get("cf-connecting-ip")
     if cf:
         return cf
     return headers.get("x-forwarded-for", req.remote_addr).split(",")[-1].strip()
@@ -37,7 +45,8 @@ def resolver(req):
     per=FG_PER,
 )
 def gate_check():
-    pass
+    if request.headers.get("x-access-key") != DEALER_KEY:
+        return "no", 403
 
 
 @app.errorhandler(404)

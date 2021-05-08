@@ -13,6 +13,7 @@ notification_resolver = admin.NotificationResolver()
 notification_delete_resolver = admin.NotificationDeleteResolver()
 logserver_key_resolver = admin.LogserverKeyResolver()
 user_count_resolver = admin.UserCountResolver()
+invalidate_resolver = admin.InvalidateResolver()
 
 
 @app.route("/admin/<event>/users/", **crud("get"))
@@ -79,3 +80,9 @@ def notifications(event):
 @api_response
 def user_count(event):
     return user_count_resolver.resolve_for(event)
+
+
+@app.rout("/admin/-/invalidate/", **crud("post"))
+@api_response
+def invalidate_keys():
+    return invalidate_resolver.resolve_for()

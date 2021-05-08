@@ -10,11 +10,13 @@
 
 from functools import wraps
 from json import dumps, loads
+import json
 from os import stat
 from pathlib import Path
+from server.util import json_response
 from time import time
 
-from flask import make_response
+from flask import make_response, Response
 from flask.helpers import send_file
 
 from server.safe_io import (
@@ -90,12 +92,19 @@ def cache_data(key, data):
         close_lockfile(file_path)
 
 
-def invalidate(key):
-    info, binary = get_paths(key)
-    safe_remove(info)
-    safe_remove(binary)
-    close_lockfile(info)
-    close_lockfile(binary)
+def invalidate_keys(keys):
+    for key in keys:
+        info, binary = get_paths(key)
+        safe_remove(info)
+        safe_remove(binary)
+        close_lockfile(info)
+        close_lockfile(binary)
+
+
+def invalidate(keys, obj):
+    k = keys if isinstance(keys, (tuple, list)) else [keys]
+    invalidate_keys(k)
+    return get_invalidate_response(obj, k)
 
 
 def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
@@ -133,6 +142,14 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
 
 def read_cache(c, mode="r"):
     return open_and_read(Path(CACHE_DIR) / c, mode=mode)
+
+
+def get_invalidate_response(ret, key):
+    key = json.dumps(list(key))
+    if isinstance(ret, Response):
+        ret.headers.set("x-invalidate", key)
+        return ret
+    return json_response({"data": ret}, headers={"x-invalidate": key})
 
 
 def get_cache_response(has_cache, content_type="application/json"):

@@ -56,3 +56,8 @@ class LogserverKeyResolver(BaseResolver):
 class UserCountResolver(BaseResolver):
     def get(self, event):
         return admin.user_count(event)
+
+
+class InvalidateResolver(BaseResolver):
+    def get(self):
+        return admin.invalidate_listener(ParsedRequest())

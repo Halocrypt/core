@@ -3,10 +3,11 @@ import bugsnag
 from bugsnag.flask import handle_exceptions
 from server.app_init import app
 from server.routes import user, admin, play
-from server.constants import BUGSNAG_API_KEY
+from server.constants import BUGSNAG_API_KEY, IS_PROD
 
-bugsnag.configure(api_key=BUGSNAG_API_KEY)
-handle_exceptions(app)
+if IS_PROD:
+    bugsnag.configure(api_key=BUGSNAG_API_KEY)
+    handle_exceptions(app)
 
 
 def serve_static_file(file: str):
@@ -23,7 +24,6 @@ def robots():
 @app.route("/favicon.ico")
 def favicon():
     return serve_static_file("favicon.ico")
-
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-from sqlalchemy.orm.attributes import flag_modified
 from server.api_handlers.common import (
     add_to_db,
     delete_from_db,
@@ -7,17 +6,18 @@ from server.api_handlers.common import (
     get_question_by_id,
     get_question_list,
     get_user_by_id,
+    get_user_count,
     get_user_list,
     save_to_db,
     send_admin_action_webhook,
-    get_user_count,
 )
 from server.api_handlers.cred_manager import CredManager
 from server.auth_token import require_jwt
 from server.constants import REMOTE_LOG_DB_KEY
 from server.models.question import Question
-from server.response_caching import cache, invalidate
+from server.response_caching import cache, invalidate, invalidate_keys
 from server.util import AppException, ParsedRequest, js_time
+from sqlalchemy.orm.attributes import flag_modified
 
 
 @require_jwt(admin_mode=True)
@@ -39,10 +39,9 @@ def disqualify(req: ParsedRequest, user, *, creds: CredManager = CredManager):
     user_data.disqualification_reason = reason
     user_data.points -= deduct_points
     js = user_data.as_json
-    invalidate(f"{user_data.event}-leaderboard")
     send_admin_action_webhook([f"{user} was disqualified by {creds.user}"])
     save_to_db()
-    return js
+    return invalidate(f"{user_data.event}-leaderboard", js)
 
 
 @require_jwt(admin_mode=True)
@@ -51,10 +50,9 @@ def requalify(user, creds=CredManager):
     user_data.is_disqualified = False
     user_data.disqualification_reason = None
     js = user_data.as_json
-    invalidate(f"{user_data.event}-leaderboard")
     save_to_db()
     send_admin_action_webhook([f"{user} was requalified by {creds.user}"])
-    return js
+    return invalidate(f"{user_data.event}-leaderboard", js)
 
 
 @require_jwt(admin_mode=True)
@@ -108,10 +106,10 @@ def question_mutation(json: dict, event: str, question_number=None):
         question.question_hints = hints or question.question_hints
         question.answer = answer or question.answer
         js = question.as_json
-        invalidate(f"question-{event}-{question_number}")
-    invalidate(f"{event}-questions-list")
     save_to_db()
-    return js
+    return invalidate(
+        [f"question-{event}-{question_number}", f"{event}-questions-list"], js
+    )
 
 
 @require_jwt(admin_mode=True)
@@ -126,11 +124,8 @@ def edit_event(req: ParsedRequest, event, creds=CredManager):
     ev.event_start_time = start_time
     ev.event_end_time = end_time
     ev.is_over = is_over
-
-    invalidate(f"{event}-event-details")
-    invalidate("events-list")
     save_to_db()
-    return {"success": True}
+    return invalidate(["events-list", f"{event}-event-details"], {"success": True})
 
 
 @require_jwt(admin_mode=True)
@@ -142,8 +137,7 @@ def add_notification(req: ParsedRequest, event_name: str, creds=CredManager):
     event.notifications = notifs
     flag_modified(event, "notifications")
     save_to_db()
-    invalidate(f"{event_name}-notifications")
-    return {"success": True}
+    return invalidate(f"{event_name}-notifications", {"success": True})
 
 
 @require_jwt(admin_mode=True)
@@ -154,8 +148,7 @@ def delete_notification(event_name: str, ts, creds=CredManager):
     n.sort(key=lambda x: x["ts"], reverse=True)
     event.notifications = n
     save_to_db()
-    invalidate(f"{event_name}-notifications")
-    return {"success": True}
+    return invalidate(f"{event_name}-notifications", {"success": True})
 
 
 @require_jwt(admin_mode=True)
@@ -168,3 +161,9 @@ def user_count(event, creds=CredManager):
 def logserver_key(creds=CredManager):
 
     return REMOTE_LOG_DB_KEY
+
+
+def invalidate_listener(req: ParsedRequest):
+    k = req.json["keys"]
+    invalidate_keys(k)
+    return {"success": True}
