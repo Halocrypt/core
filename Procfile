@@ -1,1 +1,1 @@
-web: bin/start-nginx exec "./decrypt.sh $PASSPHRASE && gunicorn -c  server/gunicorn.conf.py _core:app"
+web: bin/start-nginx exec gunicorn -c  server/gunicorn.conf.py _core:app

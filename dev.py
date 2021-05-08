@@ -22,7 +22,6 @@ def get_argv(argv, i):
 
 if __name__ == "__main__":
     import sys
-
     argv = sys.argv
     gunicorn = get_argv(argv, 1) == "gunicorn"
     print("Starting")
