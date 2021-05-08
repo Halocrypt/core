@@ -59,5 +59,5 @@ class UserCountResolver(BaseResolver):
 
 
 class InvalidateResolver(BaseResolver):
-    def get(self):
+    def post(self):
         return admin.invalidate_listener(ParsedRequest())

@@ -45,7 +45,7 @@ def resolver(req):
     per=FG_PER,
 )
 def gate_check():
-    if request.headers.get("x-access-key") != DEALER_KEY:
+    if IS_PROD and request.headers.get("x-access-key") != DEALER_KEY:
         return "no", 403
 
 
