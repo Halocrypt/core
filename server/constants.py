@@ -2,7 +2,7 @@ from os import environ as _environ, path
 from pathlib import Path
 
 
-IS_PROD = _environ.get("IS_DEV") is None
+IS_PROD = _environ.get("IS_PROD") is not None
 
 if not IS_PROD:
     print(
