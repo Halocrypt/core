@@ -1,3 +1,16 @@
+import subprocess
+import os
+
+
+p = os.environ.get("PASSPHRASE")
+if p:
+    subprocess.Popen(["bash", "./decrypt.sh", p]).wait()
+
+del os
+del subprocess
+del p
+
+
 def when_ready(server):
     # touch app-initialized when ready
     try:

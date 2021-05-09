@@ -15,7 +15,7 @@ SIGNING_KEY = _environ["JWT_SIGNING_KEY"]
 TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * int(_environ.get("TOKEN_EXPIRATION_TIME", 10))
 
 FLASK_SECRET = _environ["FLASK_SECRET"]
-DATABASE_URL = (_environ.get("DB_URL") or _environ["DATABASE_URL"]).replace(
+DATABASE_URL = (_environ.get("DATABASE_URL") or _environ["DB_URL"]).replace(
     "postgres://", "postgresql://", 1
 )
 
