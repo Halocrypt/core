@@ -31,6 +31,7 @@ def leaderboard(x):
         User.points.desc(),
         User.level.desc(),
         User.last_question_answered_at.asc(),
+        User.created_at.asc(),
     ).filter_by(event=x)
 
     return [only_keys(x.as_json, *leaderboard_keys) for x in users.all()]

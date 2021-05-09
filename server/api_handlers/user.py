@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from re import IGNORECASE
 from re import compile as _compile
+from server.response_caching import invalidate
 from urllib.parse import urlencode
 
 # pylint: disable=no-name-in-module
@@ -71,8 +72,8 @@ def register(request: _Parsed):
     institution = get("institution")
     password = get("password")
     event = get("event")
-    # if event == "intra":
-    #     raise AppException("Inta is over..see you in the main event")
+    if event == "intra":
+        raise AppException("Inta is over..see you in the main event")
     try:
         user_data = User(
             user=user,
@@ -85,7 +86,7 @@ def register(request: _Parsed):
         js = user_data.as_json
         add_to_db(user_data)
         send_acount_creation_webhook(user, name, event)
-        return js
+        return invalidate(f"{event}-leaderboard", js)
     except Exception as e:
         check_integrity_error(e)
 
