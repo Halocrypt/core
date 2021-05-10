@@ -274,16 +274,20 @@ def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
     user_data = get_user_by_id(user)
     text = []
     who = creds.user
+    did_change = False
     for k, v in json.items():
         prev = getattr(user_data, k, "N/A")
         if prev == v:
             continue
+        did_change = True
         setattr(user_data, k, v)
         if creds.is_admin:
             text.append(f"{who} changed {k} of `{user}` from `{prev}` to `{v}`")
 
         if k == "email":
             user_data.has_verified_email = False
+    event = user_data.event
+    js = user_data.as_json
     try:
         save_to_db()
     except Exception as e:
@@ -291,7 +295,9 @@ def edit(request: _Parsed, user: str, creds: CredManager = CredManager):
 
     if creds.is_admin and text:
         send_admin_action_webhook(text)
-    return user_data.as_json
+    if did_change:
+        return invalidate(f"{event}-leaderboard", js)
+    return js
 
 
 @require_jwt()
