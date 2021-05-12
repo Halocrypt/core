@@ -1,39 +1,34 @@
-from server.util import api_response, crud
+from server.api_handlers import play
 from server.app_init import app
-from server.resolvers import play
 
-leaderboard_resolver = play.LeaderboardResolver()
-question_resolver = play.QuestionResolver()
-answer_resolver = play.AnswerResolver()
-event_list_resolver = play.EventListResolver()
-get_notification_resolver = play.GetNotificationResolver()
+from server.util import ParsedRequest, api_response
 
 
-@app.route("/play/<event>/leaderboard/", **crud("get"))
+@app.get("/play/<event>/leaderboard/", strict_slashes=False)
 @api_response
 def leaderboard(event):
-    return leaderboard_resolver.resolve_for(event)
+    return play.leaderboard(event)
 
 
-@app.route("/play/<event>/question/", **crud("get"))
+@app.get("/play/<event>/question/", strict_slashes=False)
 @api_response
 def question(event):
-    return question_resolver.resolve_for(event)
+    return play.question(event)
 
 
-@app.route("/play/<event>/answer/", **crud("post"))
+@app.post("/play/<event>/answer/", strict_slashes=False)
 @api_response
 def answer(event):
-    return answer_resolver.resolve_for(event)
+    return play.answer(ParsedRequest(), event)
 
 
-@app.route("/play/<event>/notifications/", **crud("get"))
+@app.get("/play/<event>/notifications/", strict_slashes=False)
 @api_response
 def get_notifications(event):
-    return get_notification_resolver.resolve_for(event)
+    return play.get_notifications(event)
 
 
-@app.route("/play/events/", **crud("get"))
+@app.get("/play/events/", strict_slashes=False)
 @api_response
 def list_events():
-    return event_list_resolver.resolve_for()
+    return play.list_events()

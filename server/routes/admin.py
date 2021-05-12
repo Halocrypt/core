@@ -1,88 +1,75 @@
-from server.resolvers import admin
+from server.api_handlers import admin
 from server.app_init import app
-from server.util import api_response, crud
-
-user_list_resolver = admin.UserListResolver()
-disqualification_resolver = admin.DisqualificationResolver()
-requalification_resolver = admin.RequalificationResolver()
-add_question_resolver = admin.AddQuestionResolver()
-edit_question_resolver = admin.EditQuestionResolver()
-question_list_resolver = admin.QuestionListResolver()
-event_edit_resolver = admin.EventEditResolver()
-notification_resolver = admin.NotificationResolver()
-notification_delete_resolver = admin.NotificationDeleteResolver()
-logserver_key_resolver = admin.LogserverKeyResolver()
-user_count_resolver = admin.UserCountResolver()
-invalidate_resolver = admin.InvalidateResolver()
+from server.util import ParsedRequest, api_response
 
 
-@app.route("/admin/<event>/users/", **crud("get"))
+@app.get("/admin/<event>/users/", strict_slashes=False)
 @api_response
 def user_list(event):
-    return user_list_resolver.resolve_for(event)
+    return admin.event_users(event)
 
 
-@app.route("/admin/accounts/<user>/disqualify/", **crud("patch"))
+@app.patch("/admin/accounts/<user>/disqualify/", strict_slashes=False)
 @api_response
 def disqualify(user):
-    return disqualification_resolver.resolve_for(user)
+    return admin.disqualify(ParsedRequest(), user)
 
 
-@app.route("/admin/accounts/<user>/requalify/", **crud("patch"))
+@app.patch("/admin/accounts/<user>/requalify/", strict_slashes=False)
 @api_response
 def requalify(user):
-    return requalification_resolver.resolve_for(user)
+    return admin.requalify(user)
 
 
-@app.route("/admin/<event>/questions/add/", **crud("post"))
+@app.post("/admin/<event>/questions/add/", strict_slashes=False)
 @api_response
 def add_question(event):
-    return add_question_resolver.resolve_for(event)
+    return admin.add_question(ParsedRequest(), event)
 
 
-@app.route("/admin/<event>/questions/<int:number>/", **crud("patch"))
+@app.patch("/admin/<event>/questions/<int:number>/", strict_slashes=False)
 @api_response
 def edit_questions(event, number):
-    return edit_question_resolver.resolve_for(event, number)
+    return admin.edit_question(ParsedRequest(), event, number)
 
 
-@app.route("/admin/events/<event>/questions/", **crud("get"))
+@app.get("/admin/events/<event>/questions/", strict_slashes=False)
 @api_response
 def list_questions(event):
-    return question_list_resolver.resolve_for(event)
+    return admin.list_questions(event)
 
 
-@app.route("/admin/events/<event>/", **crud("patch"))
+@app.patch("/admin/events/<event>/", strict_slashes=False)
 @api_response
 def edit_event(event):
-    return event_edit_resolver.resolve_for(event)
+    return admin.edit_event(ParsedRequest(), event)
 
 
-@app.route("/admin/yek-revresgol/", **crud("get"))
+@app.get("/admin/yek-revresgol/", strict_slashes=False)
 @api_response
 def logserver_key():
-    return logserver_key_resolver.resolve_for()
+    return admin.logserver_key()
 
 
-@app.route("/admin/<event>/notifications/<int:ts>/", **crud("delete"))
+@app.delete("/admin/<event>/notifications/<int:ts>/", strict_slashes=False)
 @api_response
 def delete_notification(event, ts):
-    return notification_delete_resolver.resolve_for(event, ts)
+    return admin.delete_notification(event, ts)
 
 
-@app.route("/admin/<event>/notifications/", **crud("patch", "delete"))
+@app.patch("/admin/<event>/notifications/", strict_slashes=False)
 @api_response
-def notifications(event):
-    return notification_resolver.resolve_for(event)
+def add_notification(event):
+    return admin.add_notification(ParsedRequest(), event)
 
 
-@app.route("/admin/<event>/user-count/", **crud("get"))
+@app.get("/admin/<event>/user-count/", strict_slashes=False)
 @api_response
 def user_count(event):
-    return user_count_resolver.resolve_for(event)
+    return admin.user_count(event)
 
 
-@app.route("/admin/-/invalidate/", **crud("post"))
+@app.get("/admin/-/invalidate/", strict_slashes=False)
 @api_response
 def invalidate_keys():
-    return invalidate_resolver.resolve_for()
+    return admin.invalidate_listener(ParsedRequest())

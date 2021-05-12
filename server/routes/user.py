@@ -1,56 +1,73 @@
 from server.app_init import app
-from server.util import api_response, crud
+from server.util import ParsedRequest, api_response
+from server.api_handlers import admin, user
 
-from server.resolvers import user
 
-register_resolver = user.RegisterResolver()
-login_resolver = user.LoginResolver()
-authentication_resolver = user.AuthenticationResolver()
-user_resolver = user.UserResolver()
-email_verification_resolver = user.EmailVerificationResolver()
-paassword_reset_resolver = user.PasswordResetResolver()
 # user registration route
 # POST request
-@app.route("/accounts/register/", **crud("post"))
-@app.route("/register", **crud("post"))
+@app.post("/accounts/register/", strict_slashes=False)
+@app.post("/register", strict_slashes=False)
 @api_response
 def register():
-    return register_resolver.resolve_for()
+    return user.register(ParsedRequest())
 
 
-@app.route("/accounts/login", **crud("post"))
+@app.post("/accounts/login", strict_slashes=False)
 @api_response
 def login():
-    return login_resolver.resolve_for()
+    return user.login(ParsedRequest())
 
 
 # refresh the JWT Token
 # GET request
-@app.route("/accounts/token/refresh/", **crud("get"))
+@app.get("/accounts/token/refresh/", strict_slashes=False)
 @api_response
 def refesh_token():
-    return authentication_resolver.resolve_for()
+    return user.re_authenticate(ParsedRequest())
 
 
 # ===========================================================================
 #                                  Users
 
 
-# Get user info, secure data is removed for unauthenticated
-# requests
-@app.route("/accounts/<user_name>/", **crud("get", "patch", "delete"))
+# Get user info, secure data is removed for unauthenticated requests
+@app.get("/accounts/<user_name>/", strict_slashes=False)
 @api_response
 def user_details(user_name):
-    return user_resolver.resolve_for(user_name)
+    return user.get_user_details(user_name)
 
 
-@app.route("/accounts/email-verification/", **crud("post", "patch"))
+@app.patch("/accounts/<user_name>/", strict_slashes=False)
+@api_response
+def edit_user_details(user_name):
+    return user.edit(ParsedRequest(), user_name)
+
+
+@app.delete("/accounts/<user_name>/", strict_slashes=False)
+@api_response
+def delete_user_details(user_name):
+    return admin.delete(user_name)
+
+
+@app.post("/accounts/email-verification/", strict_slashes=False)
 @api_response
 def send_verification_email():
-    return email_verification_resolver.resolve_for()
+    return user.send_verification_email(ParsedRequest())
 
 
-@app.route("/accounts/<user_name>/password/new/", **crud("post", "patch"))
+@app.patch("/accounts/email-verification/", strict_slashes=False)
+@api_response
+def confirm_email():
+    return user.confirm_email(ParsedRequest())
+
+
+@app.post("/accounts/<user_name>/password/new/", strict_slashes=False)
 @api_response
 def send_password_reset_email(user_name):
-    return paassword_reset_resolver.resolve_for(user_name)
+    return user.send_password_reset_email(ParsedRequest(), user_name)
+
+
+@app.patch("/accounts/<user_name>/password/new/", strict_slashes=False)
+@api_response
+def verify_password_reset(user_name):
+    return user.verify_password_reset(ParsedRequest(), user_name)

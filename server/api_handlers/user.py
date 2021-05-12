@@ -235,7 +235,7 @@ def re_authenticate(req: _Parsed):
 
 # creds  will be injected by require_jwt
 @require_jwt(strict=False)
-def get_user_details(request: _Parsed, user: str, creds: CredManager = CredManager):
+def get_user_details(user: str, creds: CredManager = CredManager):
     current_user = creds.user
     if user == "me" or current_user == user.lower():
         if current_user is not None:

@@ -1,5 +1,10 @@
 from http import HTTPStatus
-from server.constants import LOG_SERVER_ENDPOINT, MIN_QUESTION_TO_LOG, REMOTE_LOG_DB_KEY
+from server.constants import (
+    IS_PROD,
+    LOG_SERVER_ENDPOINT,
+    MIN_QUESTION_TO_LOG,
+    REMOTE_LOG_DB_KEY,
+)
 from server.response_caching import cache, invalidate
 from time import time
 
@@ -100,7 +105,7 @@ def assert_hunt_running(event):
 
 
 def log_answer(user, question, answer, is_correct):
-    if question >= MIN_QUESTION_TO_LOG:
+    if question >= MIN_QUESTION_TO_LOG and IS_PROD:
         requests.post(
             f"{LOG_SERVER_ENDPOINT}/add",
             headers={"x-access-key": REMOTE_LOG_DB_KEY},
@@ -108,10 +113,9 @@ def log_answer(user, question, answer, is_correct):
         )
 
 
-@require_jwt(strict=False)
+@require_jwt()
 @cache(lambda x, **_: f"{x}-notifications", timeout=5 * 60 * 60)
 def get_notifications(x, creds=CredManager):
-    # print(creds.user)
     return get_event_by_id(x).notifications
 
 

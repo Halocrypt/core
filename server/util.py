@@ -105,9 +105,5 @@ class AppException(Exception):
         self.message = message
 
 
-def crud(*methods):
-    return {"strict_slashes": False, "methods": methods}
-
-
 def only_keys(d, *keys):
     return {k: d.get(k) for k in keys}
