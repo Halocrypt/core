@@ -24,8 +24,9 @@ def _auth(authorization: str, strict: bool):
         return NULL_USER
     try:
         access_token = decode_token(authorization)
-    except Exception:
+    except Exception as e:
         if strict:
+            print(e)
             raise HTTPException(403, "Invalid token")
         return NULL_USER
 

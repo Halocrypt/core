@@ -100,7 +100,10 @@ async def refesh_token(
     x_refresh_token: Optional[str] = Header(None),
     db: AsyncSession = Depends(inject_db),
 ):
-    decoded_access = decode_token(authorization)
+
+    decoded_access = decode_token(
+        (authorization or "").replace("Bearer ", "", 1).strip()
+    )
     if decoded_access is None:
         decoded_refresh = decode_token(x_refresh_token)
         access, refresh = await regenerate_access_token(db, decoded_refresh)
