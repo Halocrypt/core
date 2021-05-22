@@ -17,7 +17,7 @@ TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * int(_environ.get("TOKEN_EXPIRATION_TIME"
 FLASK_SECRET = _environ["FLASK_SECRET"]
 DATABASE_URL = (_environ.get("DATABASE_URL") or _environ["DB_URL"]).replace(
     "postgres://", "postgresql+asyncpg://", 1
-) + "?prepared_statement_cache_size=0"
+) + "?statement_cache_size=0"
 print("[DB]", DATABASE_URL)
 REFRESH_TOKEN_SALT = _environ["REFRESH_TOKEN_SALT"]
 BACKEND_WEBHOOK_URL = _environ["BACKEND_WEBHOOK_URL"]
