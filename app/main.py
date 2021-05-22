@@ -45,4 +45,4 @@ if IS_PROD:
     from bugsnag.asgi import BugsnagMiddleware
 
     bugsnag.configure(api_key=BUGSNAG_API_KEY)
-    app = BugsnagMiddleware(app)
+    app.add_middleware(BugsnagMiddleware)
