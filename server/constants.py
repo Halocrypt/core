@@ -6,7 +6,7 @@ IS_PROD = _environ.get("IS_PROD") is not None
 
 if not IS_PROD:
     print(
-        "assuming development environment, remove `IS_DEV` from your environment to use the production mode"
+        "assuming development environment, add `IS_PROD` to your environment to use the production mode"
     )
 
 # JWT Signing key, make sure this stays same or every user will need to relogin

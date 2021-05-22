@@ -1,6 +1,6 @@
 from flask import Flask, request
 
-from floodgate import guard
+from floodgate.flask import guard
 from .constants import (
     DATABASE_URL,
     DEALER_KEY,
@@ -11,7 +11,6 @@ from .constants import (
 )
 
 from .util import (
-    AppException,
     get_origin,
     json_response,
 )
