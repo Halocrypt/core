@@ -13,13 +13,6 @@ from app.middlewares.response_headers import response_header
 from app.routers import admin, play, user
 
 app = FastAPI(debug=not IS_PROD)
-if IS_PROD:
-    print("[BugHandling] Enabled Bugsnag")
-    import bugsnag
-    from bugsnag.asgi import BugsnagMiddleware
-
-    bugsnag.configure(api_key=BUGSNAG_API_KEY)
-    app = BugsnagMiddleware(app)
 
 
 app.add_exception_handler(Exception, base_error_handler)
@@ -46,6 +39,10 @@ async def robots():
     return static_file("robots.txt")
 
 
-@app.get("/o{k}")
-async def ok(k: int):
-    return {"data": k}
+if IS_PROD:
+    print("[BugHandling] Enabled Bugsnag")
+    import bugsnag
+    from bugsnag.asgi import BugsnagMiddleware
+
+    bugsnag.configure(api_key=BUGSNAG_API_KEY)
+    app = BugsnagMiddleware(app)
