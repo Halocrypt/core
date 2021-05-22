@@ -5,24 +5,24 @@ from server.api_handlers import admin, user
 
 # user registration route
 # POST request
-@app.post("/accounts/register/", strict_slashes=False)
-@app.post("/register", strict_slashes=False)
+@router.post("/accounts/register")
+@router.post("/register")
 @api_response
-def register():
+async def register():
     return user.register(ParsedRequest())
 
 
-@app.post("/accounts/login", strict_slashes=False)
+@router.post("/accounts/login")
 @api_response
-def login():
+async def login():
     return user.login(ParsedRequest())
 
 
 # refresh the JWT Token
 # GET request
-@app.get("/accounts/token/refresh/", strict_slashes=False)
+@router.get("/accounts/token/refresh")
 @api_response
-def refesh_token():
+async def refesh_token():
     return user.re_authenticate(ParsedRequest())
 
 
@@ -31,43 +31,43 @@ def refesh_token():
 
 
 # Get user info, secure data is removed for unauthenticated requests
-@app.get("/accounts/<user_name>/", strict_slashes=False)
+@router.get("/accounts/<user_name>")
 @api_response
-def user_details(user_name):
+async def user_details(user_name):
     return user.get_user_details(user_name)
 
 
-@app.patch("/accounts/<user_name>/", strict_slashes=False)
+@router.patch("/accounts/<user_name>")
 @api_response
-def edit_user_details(user_name):
+async def edit_user_details(user_name):
     return user.edit(ParsedRequest(), user_name)
 
 
-@app.delete("/accounts/<user_name>/", strict_slashes=False)
+@router.delete("/accounts/<user_name>")
 @api_response
-def delete_user_details(user_name):
+async def delete_user_details(user_name):
     return admin.delete(user_name)
 
 
-@app.post("/accounts/email-verification/", strict_slashes=False)
+@router.post("/accounts/email-verification")
 @api_response
-def send_verification_email():
+async def send_verification_email():
     return user.send_verification_email(ParsedRequest())
 
 
-@app.patch("/accounts/email-verification/", strict_slashes=False)
+@router.patch("/accounts/email-verification")
 @api_response
-def confirm_email():
+async def confirm_email():
     return user.confirm_email(ParsedRequest())
 
 
-@app.post("/accounts/<user_name>/password/new/", strict_slashes=False)
+@router.post("/accounts/<user_name>/password/new")
 @api_response
-def send_password_reset_email(user_name):
+async def send_password_reset_email(user_name):
     return user.send_password_reset_email(ParsedRequest(), user_name)
 
 
-@app.patch("/accounts/<user_name>/password/new/", strict_slashes=False)
+@router.patch("/accounts/<user_name>/password/new")
 @api_response
-def verify_password_reset(user_name):
+async def verify_password_reset(user_name):
     return user.verify_password_reset(ParsedRequest(), user_name)

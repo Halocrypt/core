@@ -25,3 +25,4 @@ threads = 4
 max_requests = 1200
 max_requests_jitter = 10
 timeout = 500
+worker = "uvicorn.workers.UvicornWorker"

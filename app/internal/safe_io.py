@@ -1,6 +1,5 @@
 from os.path import basename
 from pathlib import Path
-from time import sleep
 
 from .constants import CACHE_DIR
 

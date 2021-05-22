@@ -8,25 +8,25 @@
 # serialising overhead
 # and sending binary using a wsgi server is pretty performant
 
+from app.internal.util import build_call_func
 from functools import wraps
 from json import dumps, loads
 import json
 from os import stat
 from pathlib import Path
-from server.util import json_response
+from fastapi.responses import JSONResponse, FileResponse
 from time import time
+from fastapi import Response
 
-from flask import make_response, Response
-from flask.helpers import send_file
 
-from server.safe_io import (
+from .safe_io import (
     open_and_read,
     open_and_write,
     close_lockfile,
     safe_mkdir,
     safe_remove,
 )
-from server.constants import CACHE_DIR, DISABLE_CACHING
+from .constants import CACHE_DIR, DISABLE_CACHING
 from gc import collect
 
 DEFAULT_CACHE_TIMEOUT = 60 * 60
@@ -110,9 +110,10 @@ def invalidate(keys, obj):
 def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
     def decorator(func):
         @wraps(func)
-        def flask_cache(*args, **kwargs):
+        async def flask_cache(*args, **kwargs):
+            call_func = build_call_func(func, args, kwargs)
             if DISABLE_CACHING:
-                return func(*args, **kwargs)
+                return await call_func()
             key = (
                 key_method
                 if isinstance(key_method, str)
@@ -130,7 +131,7 @@ def cache(key_method, timeout=DEFAULT_CACHE_TIMEOUT, json_cache: bool = False):
                     resp = get_cache_response(has_cache)
                     return resp
             print("Cache miss:", key)
-            result = func(*args, **kwargs)
+            result = await call_func()
             cache_data(key, result)
             print("gc:", collect())
             return result
@@ -149,11 +150,11 @@ def get_invalidate_response(ret, key):
     if isinstance(ret, Response):
         ret.headers.set("x-invalidate", key)
         return ret
-    return json_response({"data": ret}, headers={"x-invalidate": key})
+    return JSONResponse({"data": ret}, headers={"x-invalidate": key})
 
 
 def get_cache_response(has_cache, content_type="application/json"):
-    resp = make_response(send_file(has_cache))
+    resp = FileResponse(has_cache)
     add_no_cache_headers(resp.headers, content_type)
     return resp
 
@@ -169,5 +170,3 @@ def add_no_cache_headers(headers, ct):
     headers["Pragma"] = "no-cache"
     headers["Expires"] = "-1"
     headers["x-cached-response"] = "1"
-    headers.remove("etag")
-    headers.remove("last-modified")
