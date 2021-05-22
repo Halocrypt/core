@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, g
 
 from floodgate.flask import guard
 from .constants import (
@@ -14,7 +14,7 @@ from .util import (
     get_origin,
     json_response,
 )
-
+from time import time
 
 from server.models import db
 
@@ -44,6 +44,7 @@ def resolver(req):
     per=FG_PER,
 )
 def gate_check():
+    g.start = time()
     if IS_PROD and request.headers.get("x-access-key") != DEALER_KEY:
         return "no", 403
 
@@ -75,5 +76,5 @@ def cors(resp):
     resp.headers[
         "access-control-allow-methods"
     ] = "GET, POST, PATCH, PUT, OPTIONS, DELETE"
-
+    resp.headers["x-process-time"] = f"{round(time()-g.start,2)}"
     return resp
