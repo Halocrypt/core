@@ -40,7 +40,7 @@ async def get_latest_q_level(db: AsyncSession, event: EventModel) -> int:
     assert_valid_event(event)
     stmt = select(func.max(Question.question_number)).where(Question.event == event)
     q = await db.execute(stmt)
-    return get_one(q)[0]
+    return get_one(q)
 
 
 async def get_next_q_level(db: AsyncSession, event: EventModel) -> int:
@@ -83,7 +83,7 @@ async def get_events_list(db: AsyncSession) -> List[dict]:
 
 async def get_user_count(db: AsyncSession, event: Event) -> int:
     assert_valid_event(event)
-    stmt = select(User).where(User.event == event).count()
+    stmt = select(func.count(User._id)).where(User.event == event)
     q = await db.execute(stmt)
     return q.scalars().first()
 

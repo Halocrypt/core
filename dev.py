@@ -8,6 +8,8 @@ GUNICORN_COMMANDS = (
         "_core:app",
         "-b",
         "localhost:5000",
+        "-k",
+        "uvicorn.workers.UvicornWorker",
     ],
 )
 FLASK_COMMANDS = (["python3", "_core.py"],)
@@ -22,6 +24,7 @@ def get_argv(argv, i):
 
 if __name__ == "__main__":
     import sys
+
     argv = sys.argv
     gunicorn = get_argv(argv, 1) == "gunicorn"
     print("Starting")

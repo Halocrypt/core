@@ -3,7 +3,8 @@
 # ==================================================
 
 from asyncio import iscoroutinefunction
-from re import compile as _compile, IGNORECASE
+from re import IGNORECASE
+from re import compile as _compile
 from time import time
 
 import requests
@@ -14,9 +15,12 @@ from app.internal.constants import (
     REMOTE_LOG_DB_KEY,
     STATIC_DIR,
 )
+from fastapi import Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import IntegrityError
+
+from .constants import IS_PROD
 
 # maybe only strip whitespace?
 _sub = _compile(r"([^\w])").sub
@@ -100,3 +104,20 @@ def log_answer(user, question, answer, is_correct):
             headers={"x-access-key": REMOTE_LOG_DB_KEY},
             json=[user, question, answer, is_correct, js_time()],
         )
+
+
+def prod_ip_resolver(req: Request):
+    headers = req.headers
+    cf = headers.get("x-real-ip") or headers.get("cf-connecting-ip")
+    if cf:
+        return cf
+    return headers.get("x-forwarded-for", req.client.host).split(",")[-1].strip()
+
+
+def dev_ip_resolver(req: Request):
+    host = req.client.host
+    print("[ip]", host)
+    return host
+
+
+ip_resolver = prod_ip_resolver if IS_PROD else dev_ip_resolver

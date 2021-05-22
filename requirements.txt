@@ -4,10 +4,13 @@ asyncpg==0.23.0
 bugsnag==4.0.3
 email_validator==1.1.2
 fastapi==0.65.1
+floodgate==2.0.0
 gunicorn==20.1.0
+httptools==0.2.0
 passlib==1.7.4
 pyjwt[crypto]==2.1.0
 python-multipart==0.0.5
 requests==2.25.1
 sqlalchemy==1.4.15
 uvicorn==0.13.4
+uvloop==0.15.2

@@ -23,6 +23,6 @@ def api_response(func):
         except Exception as e:
             print_exc()
             err = "An unknown error occured"
-            return JSONResponse({"error": err, "tb": f"{e}"})
+            return JSONResponse({"error": err, "tb": f"{e}"}, status_code=500)
 
     return run

@@ -119,6 +119,95 @@ async def refesh_token(
 #                                  Users
 
 
+@router.post("/accounts/email-verification")
+@api_response
+async def send_verification_email(
+    json: EmailRequest,
+    auth: UserSession = Depends(require_auth),
+    db: AsyncSession = Depends(inject_db),
+):
+    subdomain = json.get_subdomain()
+    user = auth.user
+    user_data = await get_user_by_id(db, user)
+    if user_data.has_verified_email:
+        raise HTTPException(400, "Email already verified")
+    token = create_token(issue_email_confirmation_token(user, user_data.email))
+    qs = urlencode({"token": token, "user": user})
+    url = f"https://{subdomain}.halocrypt.com/-/confirm-email?{qs}"
+    email.send_confirmation_email(user_data.email, url)
+    return {"success": True}
+
+
+@router.patch("/accounts/email-verification")
+@api_response
+async def confirm_email(
+    json: VerifyToken,
+    background_task: BackgroundTasks,
+    db: AsyncSession = Depends(inject_db),
+):
+    token = json.token
+    data = decode_token(token)
+    if data is None:
+        raise HTTPException(403, "Token expired.")
+    if data["token_type"] == EMAIL_CONF_TOKEN:
+        user = data["user"]
+        user_data = await get_user_by_id(db, user)
+        if data["email"] != user_data.email:
+            raise HTTPException(422, "Token expired")
+        if user_data.has_verified_email:
+            return {"success": True}
+        user_data.has_verified_email = True
+        await db.commit()
+        background_task.add_task(send_email_verify_webhook, user)
+        return {"success": True}
+    raise HTTPException(400, "Invalid token")
+
+
+@router.post("/accounts/{user}/password/new")
+@api_response
+async def send_password_reset_email(
+    user: str,
+    json: EmailRequest,
+    db: AsyncSession = Depends(inject_db),
+):
+    subdomain = json.get_subdomain()
+    user_data = await get_user_by_id(db, user)
+    token = create_token(issue_password_reset_token(user, user_data.password_hash))
+    qs = urlencode({"token": token, "user": user})
+    url = f"https://{subdomain}.halocrypt.com/-/reset-password?{qs}"
+    email.send_password_reset_email(user_data.email, url)
+    return {"success": True}
+
+
+@router.patch("/accounts/{user}/password/new")
+@api_response
+async def verify_password_reset(
+    user: str,
+    json: NewPassword,
+    background_task: BackgroundTasks,
+    db: AsyncSession = Depends(inject_db),
+):
+    token = json.token
+    password = json.new_password
+    data = decode_token(token)
+    if data is None:
+        raise HTTPException(403, "Token Expired.")
+    if data["token_type"] == RESET_PASSWORD_TOKEN:
+        target = data["user"]
+        if target != user:
+            raise HTTPException(403, "Lol")
+        state = data["state"]
+        user_data = await get_user_by_id(db, target)
+        if not check_password_hash(state, f"{user_data.user}{user_data.password_hash}"):
+            raise HTTPException(403, "Token Expired")
+        user_data.password_hash = password
+        await db.commit()
+        background_task.add_task(send_password_reset_webhook, user)
+        return {"success": True}
+    else:
+        raise HTTPException(400, "Invalid token")
+
+
 # Get user info, secure data is removed for unauthenticated requests
 @router.get(
     "/accounts/{user}",
@@ -204,89 +293,3 @@ async def delete_user_details(
     event = user_data.event
     await delete_from_db(db, user_data)
     return invalidate(f"{event}-leaderboard", {"success": True})
-
-
-@router.post("/accounts/email-verification")
-@api_response
-async def send_verification_email(
-    json: EmailRequest,
-    auth: UserSession = Depends(require_auth.admin),
-    db: AsyncSession = Depends(inject_db),
-):
-    subdomain = json.get_subdomain()
-    user = auth.user
-    user_data = await get_user_by_id(db, user)
-    token = create_token(issue_email_confirmation_token(user))
-    qs = urlencode({"token": token, "user": user})
-    url = f"https://{subdomain}.halocrypt.com/-/confirm-email?{qs}"
-    email.send_confirmation_email(user_data.email, url)
-    return {"success": True}
-
-
-@router.patch("/accounts/email-verification")
-@api_response
-async def confirm_email(
-    json: VerifyToken,
-    background_task: BackgroundTasks,
-    db: AsyncSession = Depends(inject_db),
-):
-    token = json.token
-    data = decode_token(token)
-    if data is None:
-        raise HTTPException(403, "Token expired.")
-    if data["token_type"] == EMAIL_CONF_TOKEN:
-        user = data["user"]
-        user_data = await get_user_by_id(db, user)
-        if user_data.has_verified_email:
-            return {"success": True}
-        user_data.has_verified_email = True
-        await db.commit()
-        background_task.add_task(send_email_verify_webhook, user)
-        return {"success": True}
-    raise HTTPException(400, "Invalid token")
-
-
-@router.post("/accounts/{user}/password/new")
-@api_response
-async def send_password_reset_email(
-    user: str,
-    json: EmailRequest,
-    auth: UserSession = Depends(require_auth.admin),
-    db: AsyncSession = Depends(inject_db),
-):
-    subdomain = json.get_subdomain()
-    user_data = await get_user_by_id(db, user)
-    token = create_token(issue_password_reset_token(user, user_data.password_hash))
-    qs = urlencode({"token": token, "user": user})
-    url = f"https://{subdomain}.halocrypt.com/-/reset-password?{qs}"
-    email.send_password_reset_email(user_data.email, url)
-    return {"success": True}
-
-
-@router.patch("/accounts/{user}/password/new")
-@api_response
-async def verify_password_reset(
-    user: str,
-    json: NewPassword,
-    background_task: BackgroundTasks,
-    db: AsyncSession = Depends(inject_db),
-):
-    token = json.token
-    password = json.new_password
-    data = decode_token(token)
-    if data is None:
-        raise HTTPException(403, "Token Expired.")
-    if data["token_type"] == RESET_PASSWORD_TOKEN:
-        target = data["user"]
-        if target != user:
-            raise HTTPException(403, "Lol")
-        state = data["state"]
-        user_data = await get_user_by_id(db, target)
-        if not check_password_hash(state, f"{user_data.user}{user_data.password_hash}"):
-            raise HTTPException(403, "Token Expired")
-        user_data.password_hash = password
-        await db.commit()
-        background_task.add_task(send_password_reset_webhook, user)
-        return {"success": True}
-    else:
-        raise HTTPException(400, "Invalid token")

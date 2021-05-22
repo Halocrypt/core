@@ -54,8 +54,13 @@ def issue_access_token(username: str, is_admin: bool):
     return {"token_type": ACCESS_TOKEN, "user": username, "is_admin": is_admin}
 
 
-def issue_email_confirmation_token(user: str):
-    return {"token_type": EMAIL_CONF_TOKEN, "user": user, "exp": time() + THREE_HOURS}
+def issue_email_confirmation_token(user: str, email: str):
+    return {
+        "token_type": EMAIL_CONF_TOKEN,
+        "user": user,
+        "email": email,
+        "exp": time() + THREE_HOURS,
+    }
 
 
 def issue_password_reset_token(user, phash):

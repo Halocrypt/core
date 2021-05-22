@@ -41,7 +41,7 @@ class ModifyQuestion(QuestionBase):
 
 class DQResponse(BaseModel):
     disqualified: bool
-    reason: bool
+    reason: str
 
 
 class GameOverResponse(BaseModel):
@@ -65,7 +65,7 @@ class AnswerEvaluation(BaseModel):
 
 
 class Notifications(BaseModel):
-    ts: int
+    ts: Optional[int]
     title: str
     content: RenderableContent
     issuedBy: str

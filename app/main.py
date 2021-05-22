@@ -8,6 +8,7 @@ from app.exceptions.validation_error import validation_exception_handler
 from app.internal.constants import BUGSNAG_API_KEY, IS_PROD
 from app.internal.util import static_file
 from app.middlewares.api_guard import api_guard
+from app.middlewares.rate_limit_middleware import rate_limit_middleware
 from app.middlewares.response_headers import response_header
 from app.routers import admin, play, user
 
@@ -25,6 +26,7 @@ app.add_exception_handler(Exception, base_error_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
+app.middleware("http")(rate_limit_middleware)
 app.middleware("http")(response_header)
 app.middleware("http")(api_guard)
 
