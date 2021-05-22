@@ -14,6 +14,13 @@ from app.routers import admin, play, user
 
 app = FastAPI(debug=not IS_PROD)
 
+if IS_PROD:
+    print("[BugHandling] Enabled Bugsnag")
+    import bugsnag
+    from bugsnag.asgi import BugsnagMiddleware
+
+    bugsnag.configure(api_key=BUGSNAG_API_KEY)
+    app.add_middleware(BugsnagMiddleware)
 
 app.add_exception_handler(Exception, base_error_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
@@ -37,12 +44,3 @@ async def favicon():
 @app.get("/robots.txt")
 async def robots():
     return static_file("robots.txt")
-
-
-if IS_PROD:
-    print("[BugHandling] Enabled Bugsnag")
-    import bugsnag
-    from bugsnag.asgi import BugsnagMiddleware
-
-    bugsnag.configure(api_key=BUGSNAG_API_KEY)
-    app.add_middleware(BugsnagMiddleware)

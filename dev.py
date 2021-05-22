@@ -8,8 +8,6 @@ GUNICORN_COMMANDS = (
         "_core:app",
         "-b",
         "localhost:5000",
-        "-k",
-        "uvicorn.workers.UvicornWorker",
     ],
 )
 FLASK_COMMANDS = (["python3", "_core.py"],)
