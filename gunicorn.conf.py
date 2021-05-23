@@ -20,7 +20,7 @@ def when_ready(server):
 
 
 bind = "unix:///tmp/nginx.socket"
-workers = 4
+workers = 3
 threads = 4
 max_requests = 1200
 max_requests_jitter = 10

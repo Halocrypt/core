@@ -44,6 +44,7 @@ def resolver(req):
     per=FG_PER,
 )
 def gate_check():
+    # pylint: disable=E0237
     g.start = time()
     if IS_PROD and request.headers.get("x-access-key") != DEALER_KEY:
         return "no", 403
