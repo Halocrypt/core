@@ -189,7 +189,7 @@ def get_subdomain(handler):
     return "www" if handler == "main" else handler
 
 
-def verify_password_reset(req: _Parsed, user_name):
+def verify_password_reset(req: _Parsed, user_name: str):
     token = req.json.get("token")
     new_password = req.json.get("new_password")
     data = decode_token(token)
@@ -198,7 +198,7 @@ def verify_password_reset(req: _Parsed, user_name):
         raise AppException("Token expired", HTTPStatus.UNAUTHORIZED)
     if data["token_type"] == RESET_PASSWORD_TOKEN:
         user = data["user"]
-        if user != user_name:
+        if user != user_name.lower():
             raise AppException("Lol")
         u = get_user_by_id(user)
         state = data["state"]
