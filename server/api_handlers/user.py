@@ -37,8 +37,6 @@ from .common import (
     save_to_db,
     send_acount_creation_webhook,
     send_admin_action_webhook,
-    send_email_verify_webhook,
-    send_password_reset_webhook,
 )
 from .cred_manager import CredManager
 
@@ -151,7 +149,6 @@ def confirm_email(req: _Parsed):
             return {"success": True}
         u.has_verified_email = True
         save_to_db()
-        send_email_verify_webhook(user)
         return {"success": True}
 
     raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)
@@ -206,7 +203,6 @@ def verify_password_reset(req: _Parsed, user_name: str):
             raise AppException("Token expired", HTTPStatus.UNAUTHORIZED)
         u.password_hash = new_password
         save_to_db()
-        send_password_reset_webhook(user)
         return {"success": True}
 
     raise AppException("Invalid token", HTTPStatus.BAD_REQUEST)

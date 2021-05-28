@@ -17,6 +17,7 @@ from server.api_handlers.common import (
     get_question,
     get_user_by_id,
     save_to_db,
+    send_level_solved_webhook,
 )
 from server.api_handlers.cred_manager import CredManager
 from server.auth_token import require_jwt
@@ -111,6 +112,7 @@ def log_answer(user, question, answer, is_correct):
             headers={"x-access-key": REMOTE_LOG_DB_KEY},
             json=[user, question, answer, is_correct, js_time()],
         )
+        send_level_solved_webhook(user, question, answer)
 
 
 @require_jwt()

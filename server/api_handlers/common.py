@@ -110,19 +110,14 @@ def get_webhook_json(title, description, color):
     return {"embeds": [{"title": title, "description": description, "color": color}]}
 
 
-def send_email_verify_webhook(user):
+def send_level_solved_webhook(user, level, answer):
     send_webhook(
         BACKEND_WEBHOOK_URL,
         get_webhook_json(
-            "Email Verification", f"{user} has verified their email", 0x0000FF
+            f"Level Solved",
+            f"{user} solved level {level} with the answer {answer}",
+            0x00FF00,
         ),
-    )
-
-
-def send_password_reset_webhook(user):
-    send_webhook(
-        BACKEND_WEBHOOK_URL,
-        get_webhook_json("Password reset", f"{user} reset their password", 0x0000FF),
     )
 
 
