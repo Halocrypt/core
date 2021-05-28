@@ -69,7 +69,7 @@ def user_count(event):
     return admin.user_count(event)
 
 
-@app.get("/admin/-/invalidate/", strict_slashes=False)
+@app.post("/admin/-/invalidate/", strict_slashes=False)
 @api_response
 def invalidate_keys():
     return admin.invalidate_listener(ParsedRequest())
