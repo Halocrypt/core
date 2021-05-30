@@ -62,6 +62,7 @@ def get_integrity_error_cause(error_message: str):
 
 
 def register(request: _Parsed):
+    raise AppException("Closed for now..check again later?")
     json = request.json
     get = json.get
     user = get("user")
