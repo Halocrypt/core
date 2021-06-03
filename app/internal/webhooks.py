@@ -3,7 +3,9 @@ from .constants import BACKEND_WEBHOOK_URL
 
 
 def send_webhook(url, json):
-    return requests.post(url, json={**json, "allowed_mentions": {"parse": []}})
+    # no need now
+    return None
+    # return requests.post(url, json={**json, "allowed_mentions": {"parse": []}})
 
 
 def get_webhook_json(title, description, color):

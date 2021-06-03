@@ -58,17 +58,18 @@ async def register(
     background_task: BackgroundTasks,
     db: AsyncSession = Depends(inject_db),
 ):
-    event = json.event
-    user_data = User(**json.dict())
-    if event == "intra":
-        raise HTTPException(400, "Intra is over")
-    js = user_data.as_json
-    try:
-        await add_to_db(db, user_data)
-    except Exception as e:
-        check_integrity_error(e)
-    background_task.add_task(send_acount_creation_webhook, json.user, json.name, event)
-    return invalidate(f"{event}-leaderboard", js)
+    raise HTTPException(403,"Closed for now.. Try again later?")
+    # event = json.event
+    # user_data = User(**json.dict())
+    # if event == "intra":
+    #     raise HTTPException(400, "Intra is over")
+    # js = user_data.as_json
+    # try:
+    #     await add_to_db(db, user_data)
+    # except Exception as e:
+    #     check_integrity_error(e)
+    # background_task.add_task(send_acount_creation_webhook, json.user, json.name, event)
+    # return invalidate(f"{event}-leaderboard", js)
 
 
 @router.post("/oauth/token")

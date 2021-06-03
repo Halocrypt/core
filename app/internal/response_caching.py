@@ -146,11 +146,13 @@ def read_cache(c, mode="r"):
 
 
 def get_invalidate_response(ret, key):
-    key = json.dumps(list(key))
-    if isinstance(ret, Response):
-        ret.headers.set("x-invalidate", key)
-        return ret
-    return JSONResponse({"data": ret}, headers={"x-invalidate": key})
+    # no remote cache invalidation needed.. this is now an identity function
+    return ret
+    # key = json.dumps(list(key))
+    # if isinstance(ret, Response):
+    #     ret.headers.set("x-invalidate", key)
+    #     return ret
+    # return JSONResponse({"data": ret}, headers={"x-invalidate": key})
 
 
 def get_cache_response(has_cache, content_type="application/json"):
