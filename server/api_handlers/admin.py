@@ -102,8 +102,12 @@ def question_mutation(json: dict, event: str, question_number=None):
     else:
         question = get_question_by_id(event, question_number)
         question.question_points = points or question.points
-        question.question_content = content if content is not None else  question.question_content
-        question.question_hints = hints if hints is not None else question.question_hints
+        question.question_content = (
+            content if content is not None else question.question_content
+        )
+        question.question_hints = (
+            hints if hints is not None else question.question_hints
+        )
         question.answer = answer or question.answer
         js = question.as_json
     save_to_db()

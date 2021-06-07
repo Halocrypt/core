@@ -44,7 +44,7 @@ def leaderboard(x):
 
 @require_jwt()
 def question(event, creds: CredManager = CredManager):
-    assert_hunt_running(event)
+    # assert_hunt_running(event)
     user = get_user_by_id(creds.user)
     if user.event != event:
         raise AppException("Not your event..")
@@ -63,7 +63,7 @@ def question(event, creds: CredManager = CredManager):
 
 @require_jwt()
 def answer(req: ParsedRequest, event, creds: CredManager = CredManager):
-    assert_hunt_running(event)
+    # assert_hunt_running(event)
     js = req.json
     answer = sanitize(js.get("answer", ""))
     # don't even bother if the user is trying an absurdly large answer
@@ -106,14 +106,15 @@ def assert_hunt_running(event):
 
 
 def log_answer(user, question, answer, is_correct):
-    if question >= MIN_QUESTION_TO_LOG and IS_PROD:
-        requests.post(
-            f"{LOG_SERVER_ENDPOINT}/add",
-            headers={"x-access-key": REMOTE_LOG_DB_KEY},
-            json=[user, question, answer, is_correct, js_time()],
-        )
-        if is_correct:
-            send_level_solved_webhook(user, question, answer)
+    return
+    # if question >= MIN_QUESTION_TO_LOG and IS_PROD:
+    #     requests.post(
+    #         f"{LOG_SERVER_ENDPOINT}/add",
+    #         headers={"x-access-key": REMOTE_LOG_DB_KEY},
+    #         json=[user, question, answer, is_correct, js_time()],
+    #     )
+    #     if is_correct:
+    #         send_level_solved_webhook(user, question, answer)
 
 
 @require_jwt()

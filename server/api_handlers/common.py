@@ -103,7 +103,8 @@ def get_question(event, number):
 
 
 def send_webhook(url, json):
-    return requests.post(url, json={**json, "allowed_mentions": {"parse": []}})
+    return
+    # return requests.post(url, json={**json, "allowed_mentions": {"parse": []}})
 
 
 def get_webhook_json(title, description, color):
