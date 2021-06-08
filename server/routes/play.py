@@ -4,7 +4,10 @@ from server.app_init import app
 
 from server.util import ParsedRequest, api_response
 
-
+# @app.get("/play/<event>/leaderboard/", strict_slashes=False)
+# @api_response
+# def leaderboard(event):
+#     return play.leaderboard(event)
 @app.get("/play/main/leaderboard/", strict_slashes=False)
 def leaderboard():
     return send_from_directory("static", "leaderboard.json")
