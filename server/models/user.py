@@ -27,6 +27,7 @@ class User(db.Model):
     level: int = db.Column(db.Integer, default=0)
     points: int = db.Column(db.Integer, default=0)
     has_verified_email: bool = db.Column(db.Boolean)
+    certificate_key: str = db.Column(db.String, unique=True)
     event: str = db.Column(db.String(10), nullable=False)
     # pylint: enable=E1101
 
@@ -45,6 +46,7 @@ class User(db.Model):
             "last_question_answered_at": self.last_question_answered_at,
             "event": self.event,
             "_secure_": {
+                "certificate_key": self.certificate_key,
                 "email": self.email,
                 "institution": self.institution,
                 "has_verified_email": self.has_verified_email,
@@ -128,3 +130,4 @@ class User(db.Model):
         self.points = 0
         self.last_question_answered_at = time()
         self.has_verified_email = False
+        self.certificate_key = token_urlsafe(60)
